@@ -17,12 +17,12 @@ set_seed(42)
 import BWBNTesting_EQ_generation
 import BWBNTesting_Preprocessing
 import BWBNTesting_Training
-# import BWBNTesting_ResultAnalysis_ as BWBNTesting_ResultAnalysis
+import BWBNTesting_ResultAnalysis
 
 EQ_generation = False
 Preprocessing = False
-Training = True
-ResultAnalysis = False
+Training = False
+ResultAnalysis = True
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -102,17 +102,21 @@ if Training:
                                 checkpoint_dir=model_dir,
                                 checkpoint_epoch=checkpoint_epoch)
 
-# result_plot_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing/ResultAnalysis'
-# show_plot = True
-# range_plot = [40, 80]
-# model_name = 'PINN_{}_{}_{}'.format(num_inputs, nn_size, 40)
-# model_path = os.path.normpath(os.path.join(model_dir, model_name))
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')))
+X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
+del Data
+X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
+model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_{}.pth'.format(i+2))) for i in range(0, num_epochs, checkpoint_epoch)]
+result_plot_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Result Plots'
+os.makedirs(result_plot_dir, exist_ok=True)
 
-# if ResultAnalysis:
-#     BWBNTesting_ResultAnalysis.result_plot(range_plot,
-#                                            result_plot_dir,
-#                                            show_plot,
-#                                            model_path,
-#                                            hysteresis_data_dir,
-#                                            num_inputs,
-#                                            output_factor)
+if ResultAnalysis:
+    BWBNTesting_ResultAnalysis.result_plot(X_val,
+                y_val,
+                mask_val,
+                X_test,
+                y_test,
+                mask_test,
+                nn_size,
+                model_paths,
+                result_plot_dir)

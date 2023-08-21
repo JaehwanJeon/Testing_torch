@@ -121,7 +121,7 @@ def train(X_train,
             y_pred, _ = model(X_val)
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_small_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_{}.pth'.format(epoch+1))))
     
     return model
 
