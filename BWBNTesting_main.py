@@ -1,12 +1,27 @@
 import os
+import numpy as np
+import torch
+import torch.nn as nn
+import random
+
+def set_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # multi-GPU 환경에서 모든 GPU에 seed 설정
+    torch.backends.cudnn.deterministic = True  # cuDNN을 determinstic 모드로 설정
+    torch.backends.cudnn.benchmark = False  # cuDNN benchmarking을 off로 설정
+    np.random.seed(seed)
+    random.seed(seed)
+
+set_seed(42)
 import BWBNTesting_EQ_generation
 import BWBNTesting_Preprocessing
-import BWBNTesting_Training2 as BWBNTesting_Training
-import BWBNTesting_ResultAnalysis_ as BWBNTesting_ResultAnalysis
+import BWBNTesting_Training
+# import BWBNTesting_ResultAnalysis_ as BWBNTesting_ResultAnalysis
 
 EQ_generation = False
-Preprocessing = True
-Training = False
+Preprocessing = False
+Training = True
 ResultAnalysis = False
 
 
@@ -61,24 +76,31 @@ if Preprocessing:
                                         normalize_gap=normalize_gap)
 
 
-nn_size = 40
-batch_size = 64
-num_epochs = 300
-computing_machine = "0"
-model_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing/Models'
 
-# if Training:
-#     BWBNTesting_Training.train(nn_size,
-#                                num_inputs,
-#                                output_factor,
-#                                loss_weights,
-#                                optimizer,
-#                                batch_size,
-#                                buffer_size,
-#                                num_epochs,
-#                                model_dir,
-#                                processed_data_dir,
-#                                test_size)
+# Training
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')))
+X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
+del Data
+X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
+nn_size = 40
+num_epochs = 300
+model_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Models'
+os.makedirs(model_dir, exist_ok=True) 
+window_size = 200
+checkpoint_epoch = 2
+
+if Training:
+    model = BWBNTesting_Training.train(X_train,
+                                y_train,
+                                mask_train,
+                                X_val,
+                                y_val,
+                                mask_val,
+                                num_epochs,
+                                nn_size,
+                                window_size,
+                                checkpoint_dir=model_dir,
+                                checkpoint_epoch=checkpoint_epoch)
 
 # result_plot_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing/ResultAnalysis'
 # show_plot = True
