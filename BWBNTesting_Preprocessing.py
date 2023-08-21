@@ -31,10 +31,10 @@ def preprocess(n_samples,
     X, y = np.array(X), np.array(y)
 
     if normalize_gap != False:
-        X_max = np.max(X, axis=0)
-        y_max = np.max(y, axis=0)
-        X = X / (X_max * 1 + normalize_gap)
-        y = y / (y_max * 1 + normalize_gap)
+        X_max = np.max(np.abs(X), axis=(0,1))[:2]
+        y_max = np.max(np.abs(y))
+        X[:, :, :2] = X[:, :, :2] / (X_max * (1 + normalize_gap))
+        y = y / (y_max * (1 + normalize_gap))
 
 
     X_train, X_test, y_train, y_test = X[:int(n_samples*0.5)], X[int(n_samples*0.5):], y[:int(n_samples*0.5)], y[int(n_samples*0.5):]
