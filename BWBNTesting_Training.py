@@ -46,7 +46,7 @@ class CustomLSTMCell(nn.Module):
 
 
 class CustomLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim, batch_size):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(CustomLSTM, self).__init__()
 
         self.input_dim = input_dim
@@ -54,25 +54,27 @@ class CustomLSTM(nn.Module):
         
         self.cell = CustomLSTMCell(input_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim + 1, output_dim, bias=False)
-        self.h, self.c = torch.zeros(batch_size, self.hidden_dim), torch.zeros(batch_size, self.hidden_dim)
-        self.batch_size = batch_size
         
-    def forward(self, x):
+
+    def forward(self, x, states=None):
         batch_size, seq_length, _ = x.size()
+
+        if states is None:
+            h, c = torch.zeros(batch_size, self.hidden_dim).to(x.device), torch.zeros(batch_size, self.hidden_dim).to(x.device)
+        else:
+            h, c = states
 
         outputs = []
         for t in range(seq_length):
-            self.h, self.c = self.cell(x[:, t, :], (self.h, self.c))
-            output = self.fc(torch.cat([self.h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
+            h, c = self.cell(x[:, t, :], (h, c))
+            output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
             outputs.append(output)
-        return torch.stack(outputs, dim=1)
+        return torch.stack(outputs, dim=1), (h, c)
     
-    def init_hidden(self, batch_size):
-        self.h, self.c = torch.zeros(batch_size, self.hidden_dim), torch.zeros(batch_size, self.hidden_dim)
     
 def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = CustomLSTM(2, 10, 1, 32).to(device)
+    model = CustomLSTM(2, 10, 1).to(device)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 

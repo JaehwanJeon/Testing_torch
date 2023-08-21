@@ -26,6 +26,7 @@ def generate_hysteresis(EQ_data_dir,
         EQ_list = random.sample(EQ_list, n_samples)
         random.shuffle(EQ_list)
 
+
     input_data = np.loadtxt(target_data, delimiter=' ')
     t = input_data[:, 0]
     gm = input_data[:, 1]
