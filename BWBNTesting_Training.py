@@ -89,7 +89,7 @@ def train(X_train,
     device = torch.device('cuda:1')
     model = CustomLSTM(2, nn_size, 1).to(device)
     criterion = custom_loss
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
 
@@ -100,7 +100,7 @@ def train(X_train,
         losses = []
         print('Epoch:', epoch+1)
         for step in range(0, X_train.shape[1]-window_size, window_size):
-            print('Step:', step, '//', X_train.shape[1]-window_size)
+            print('Step:', step, '//', X_train.shape[1]-window_size, end='\r')
             inputs = X_train[:, step:step+window_size]
             labels = y_train[:, step:step+window_size]
 
@@ -121,7 +121,7 @@ def train(X_train,
             y_pred, _ = model(X_val)
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_small_{}.pth'.format(epoch+1))))
     
     return model
 
