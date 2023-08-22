@@ -21,7 +21,7 @@ import BWBNTesting_ResultAnalysis
 
 EQ_generation = False
 Preprocessing = False
-Training = False
+Training = True
 ResultAnalysis = True
 
 
@@ -86,8 +86,12 @@ nn_size = 40
 num_epochs = 300
 model_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
-window_size = 200
+window_size = 100
 checkpoint_epoch = 2
+pretrained = os.path.normpath(os.path.join(model_dir, './checkpoint_{}.pth'.format(300)))
+
+if pretrained != False:
+    checkpoint = torch.load(pretrained)
 
 if Training:
     model = BWBNTesting_Training.train(X_train,
@@ -100,7 +104,8 @@ if Training:
                                 nn_size,
                                 window_size,
                                 checkpoint_dir=model_dir,
-                                checkpoint_epoch=checkpoint_epoch)
+                                checkpoint_epoch=checkpoint_epoch,
+                                existing_checkpoint=checkpoint)
 
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']

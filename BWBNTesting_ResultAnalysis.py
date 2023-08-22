@@ -52,7 +52,7 @@ def result_plot(X_val,
         print('Validation Loss: {}'.format(loss.item()))
     
     best_model_idx = np.argmin(losses)
-    checkpoint = torch.load(model_paths[best_model_idx])
+    checkpoint = torch.load(model_paths[-1])
     model = BWBNTesting_Training.CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)
@@ -64,9 +64,9 @@ def result_plot(X_val,
     mask_val = mask_val.cpu().detach().numpy()
 
     for i in range(len(y_val_pred)):
-        X_val_i = X_val[i, mask_val[i].astype(bool)]
-        y_val_pred_i = y_val_pred[i, mask_val[i].astype(bool)]
-        y_val_i = y_val[i, mask_val[i].astype(bool)]
+        X_val_i = X_val[i, mask_val[i].astype(int).astype(bool), 0]
+        y_val_pred_i = y_val_pred[i, mask_val[i].astype(int).astype(bool)]
+        y_val_i = y_val[i, mask_val[i].astype(int).astype(bool)]
         plt.figure(figsize=(8, 8))
         plt.plot(X_val_i, y_val_i, 'b')
         plt.plot(X_val_i, y_val_pred_i, 'r')

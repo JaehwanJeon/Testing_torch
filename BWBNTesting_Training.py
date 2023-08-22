@@ -84,10 +84,16 @@ def train(X_train,
           nn_size,
           window_size,
           checkpoint_dir,
-          checkpoint_epoch):
+          checkpoint_epoch,
+          existing_checkpoint=False):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = torch.device('cuda:1')
-    model = CustomLSTM(2, nn_size, 1).to(device)
+    
+    model = CustomLSTM(2, nn_size, 1)
+    if existing_checkpoint != False:
+        model.load_state_dict(existing_checkpoint)
+    model = model.to(device)
+
     criterion = custom_loss
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
@@ -121,7 +127,7 @@ def train(X_train,
             y_pred, _ = model(X_val)
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_short_{}.pth'.format(epoch+1))))
     
     return model
 
