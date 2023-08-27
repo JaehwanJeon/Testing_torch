@@ -5,23 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import BWBNTesting_Training
 
-# def result_plot(range_plot,
-#                 result_plot_dir,
-#                 show_plot,
-#                 model_path,
-#                 hysteresis_data_dir,
-#                 num_inputs,
-#                 output_factor):
-#
-#     os.makedirs(result_plot_dir, exist_ok=True)
-#     DNN_model = keras.models.load_model(model_path)
-#
-#     for i in range(range_plot[0], range_plot[1]):
-#         data_path = os.path.normpath(os.path.join(hysteresis_data_dir, './{}.npz'.format(i)))
-#         save_path = os.path.normpath(os.path.join(result_plot_dir, './{}.png'.format(i)))
-#         test_plot(data_path, DNN_model, num_inputs, output_factor, save_path=save_path, show_plot=show_plot)
-
-
 def result_plot(X_val,
                 y_val,
                 mask_val,
@@ -52,7 +35,7 @@ def result_plot(X_val,
         print('Validation Loss: {}'.format(loss.item()))
     
     best_model_idx = np.argmin(losses)
-    checkpoint = torch.load(model_paths[-1])
+    checkpoint = torch.load(model_paths[best_model_idx])
     model = BWBNTesting_Training.CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)

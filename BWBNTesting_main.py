@@ -82,14 +82,14 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_da
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
-nn_size = 40
-num_epochs = 300
+nn_size = 128
+num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
-window_size = 100
-checkpoint_epoch = 2
-pretrained = os.path.normpath(os.path.join(model_dir, './checkpoint_{}.pth'.format(300)))
-
+window_size = 512
+checkpoint_epoch = 1
+pretrained = False
+checkpoint = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
@@ -111,7 +111,7 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_da
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
-model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_{}.pth'.format(i+2))) for i in range(0, num_epochs, checkpoint_epoch)]
+model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_short_{}.pth'.format(i+2))) for i in range(0, num_epochs, checkpoint_epoch)]
 result_plot_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 
