@@ -20,22 +20,26 @@ class CustomLSTMCell(nn.Module):
         
         # Input gate
         self.fc_i = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.ln_i = nn.LayerNorm(self.hidden_dim)
         # Forget gate
         self.fc_f = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.ln_f = nn.LayerNorm(self.hidden_dim)
         # Cell state
         self.fc_c = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.ln_c = nn.LayerNorm(self.hidden_dim)
         # Output gate
         self.fc_o = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.ln_o = nn.LayerNorm(self.hidden_dim)
 
     def forward(self, x, states):
         h, c = states
         
         combined = torch.cat([x, h], 1)  # concatenate along the feature dimension
 
-        i = torch.sigmoid(self.fc_i(combined))
-        f = torch.sigmoid(self.fc_f(combined))
-        g = torch.tanh(self.fc_c(combined))
-        o = torch.sigmoid(self.fc_o(combined))
+        i = torch.sigmoid(self.ln_i(self.fc_i(combined)))
+        f = torch.sigmoid(self.ln_f(self.fc_f(combined)))
+        g = torch.tanh(self.ln_c(self.fc_c(combined)))
+        o = torch.sigmoid(self.ln_o(self.fc_o(combined)))
         
         c_next = f * c + i * g
         h_next = o * torch.tanh(c_next) + h    # Adding residual connection
