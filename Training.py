@@ -31,6 +31,8 @@ class CustomLSTMCell(nn.Module):
         self.fc_o = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
         self.ln_o = nn.LayerNorm(self.hidden_dim)
 
+        self.ln_h = nn.LayerNorm(self.hidden_dim)
+
     def forward(self, x, states):
         h, c = states
         
@@ -42,7 +44,7 @@ class CustomLSTMCell(nn.Module):
         o = torch.sigmoid(self.ln_o(self.fc_o(combined)))
         
         c_next = f * c + i * g
-        h_next = o * torch.tanh(c_next) + h    # Adding residual connection
+        h_next = self.ln_h(o * torch.tanh(c_next) + h)    # Adding residual connection
 
         return h_next, c_next
 
