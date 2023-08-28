@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
-import BWBNTesting_Training
+import Training
 
 def result_plot(X_val,
                 y_val,
@@ -25,18 +25,18 @@ def result_plot(X_val,
     losses = []
     for model_path in model_paths:
         checkpoint = torch.load(model_path)
-        model = BWBNTesting_Training.CustomLSTM(2, nn_size, 1)
+        model = Training.CustomLSTM(2, nn_size, 1)
         model.load_state_dict(checkpoint)
         model = model.to(device)
         model.eval()
         y_val_pred, _ = model(X_val)
-        loss = BWBNTesting_Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
+        loss = Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
         losses.append(loss.item())
         print('Validation Loss: {}'.format(loss.item()))
     
     best_model_idx = np.argmin(losses)
     checkpoint = torch.load(model_paths[best_model_idx])
-    model = BWBNTesting_Training.CustomLSTM(2, nn_size, 1)
+    model = Training.CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()

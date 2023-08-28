@@ -14,19 +14,19 @@ def set_seed(seed):
     random.seed(seed)
 
 set_seed(42)
-import BWBNTesting_EQ_generation
-import BWBNTesting_Preprocessing
-import BWBNTesting_Training
-import BWBNTesting_ResultAnalysis
+import EQ_generation
+import Preprocessing
+import Training
+import ResultAnalysis
 
-EQ_generation = False
-Preprocessing = False
+EQ_generation = True
+Preprocessing = True
 Training = True
 ResultAnalysis = True
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
-hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Hysteresis'
+hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/BoucWen Testing_torch/Hysteresis'
 
 
 with open('EQ_list.txt', 'r') as f:
@@ -46,13 +46,13 @@ seed = 0
 gm_scale_factor = 3
 n_samples = 80
 draw_hysteresis = True
-mat_type = 'BWBN'
+mat_type = 'BoucWen'
 k0 = 6.283**2
 mat_props = [0.1, k0, 1., -0.5, 1.5, 1., 0.1, 0.97, 1., 0.2, 0.002, 0.1, 1.0*10**-4, 10**6]
 change_at2_to_numpy = False
 
 if EQ_generation:
-    BWBNTesting_EQ_generation.generate_hysteresis(EQ_data_dir,
+    BoucWenTesting_EQ_generation.generate_hysteresis(EQ_data_dir,
                                                   hysteresis_data_dir,
                                                   target_data,
                                                   change_at2_to_numpy,
@@ -69,7 +69,7 @@ val_size = 0.2
 
 normalize_gap = 0.1
 if Preprocessing:
-    BWBNTesting_Preprocessing.preprocess(n_samples,
+    BoucWenTesting_Preprocessing.preprocess(n_samples,
                                         hysteresis_data_dir,
                                         processed_data_dir,
                                         val_size=val_size,
@@ -84,7 +84,7 @@ del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
 nn_size = 128
 num_epochs = 1000
-model_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Models'
+model_dir = '/home/jaehwan/Python Project/DLCM/BoucWen Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
 window_size = 512
 checkpoint_epoch = 1
@@ -94,7 +94,7 @@ if pretrained != False:
     checkpoint = torch.load(pretrained)
 
 if Training:
-    model = BWBNTesting_Training.train(X_train,
+    model = BoucWenTesting_Training.train(X_train,
                                 y_train,
                                 mask_train,
                                 X_val,
@@ -112,11 +112,11 @@ X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Dat
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
 model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_short_{}.pth'.format(i+2))) for i in range(0, num_epochs, checkpoint_epoch)]
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/BWBN Testing_torch/Result Plots'
+result_plot_dir = '/home/jaehwan/Python Project/DLCM/BoucWen Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 
 if ResultAnalysis:
-    BWBNTesting_ResultAnalysis.result_plot(X_val,
+    BoucWenTesting_ResultAnalysis.result_plot(X_val,
                 y_val,
                 mask_val,
                 X_test,
