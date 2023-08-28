@@ -17,6 +17,7 @@ def generate_hysteresis(EQ_data_dir,
                         draw_hysteresis,
                         mat_type,
                         mat_props,
+                        title,
                         EQ_list=False):
     if EQ_list == False:
         EQ_path = os.path.normpath(os.path.join(EQ_data_dir, './**/*.AT2'))
@@ -73,7 +74,7 @@ def generate_hysteresis(EQ_data_dir,
         force_ = 1 / 2 * (np.concatenate(([0], force)) + np.concatenate((force, [0])))[:-1]
         energy = np.cumsum(force_ * ds)
 
-        np.savez(os.path.normpath(os.path.join(hysteresis_data_dir, '{}.npz'.format(i))), disp=outputs['rel_disp'],
+        np.savez(os.path.normpath(os.path.join(hysteresis_data_dir, title + '_{}.npz'.format(i))), disp=outputs['rel_disp'],
                  vel=outputs['rel_vel'], force=outputs['force'], energy=energy)
         if draw_hysteresis:
             fig, ax = plt.subplots(figsize=(8,8))
@@ -82,8 +83,8 @@ def generate_hysteresis(EQ_data_dir,
             ax.tick_params(axis='both', which='major', labelsize=15)
             ax.grid()
             ax.set_title('{}'.format(i))
-            fig.savefig(os.path.normpath(os.path.join(hysteresis_data_dir, './{}.png'.format(i))))
+            fig.savefig(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_{}.png'.format(i))))
             plt.close(fig)
 
-    np.savez(os.path.normpath(os.path.join(hysteresis_data_dir, './meta.npz')), dt_list=dt_list, nPts_list=nPts_list)
+    np.savez(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_meta.npz')), dt_list=dt_list, nPts_list=nPts_list)
     print('Hysteresis data saved to {}'.format(hysteresis_data_dir))

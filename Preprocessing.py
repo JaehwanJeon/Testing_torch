@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 def preprocess(n_samples,
                hysteresis_data_dir,
                processed_data_dir,
+               title,
                val_size=False,
                normalize_gap=False):
     # Total energy as input
@@ -14,7 +15,7 @@ def preprocess(n_samples,
     time_length = []
     num_inputs = 2 + 1
     for i in range(n_samples):
-        outputs = np.load(os.path.normpath(os.path.join(hysteresis_data_dir, './{}.npz'.format(i))))
+        outputs = np.load(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_{}.npz'.format(i))))
         disp = outputs['disp']
         vel = outputs['vel']
         force = outputs['force']
@@ -42,5 +43,5 @@ def preprocess(n_samples,
     if val_size != False:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_size, random_state=0)
 
-    np.savez(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
+    np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
              y_train=y_train, y_test=y_test, y_val=y_val)

@@ -19,14 +19,16 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-EQ_generation = True
-Preprocessing = True
-Training = True
-ResultAnalysis = True
+generate_EQ = True
+preprocess = True
+train = True
+analyze_result = True
+
+Title = 'BoucWen'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
-hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/BoucWen Testing_torch/Hysteresis'
+hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Hysteresis'
 
 
 with open('EQ_list.txt', 'r') as f:
@@ -46,13 +48,13 @@ seed = 0
 gm_scale_factor = 3
 n_samples = 80
 draw_hysteresis = True
-mat_type = 'BoucWen'
+mat_type = Title
 k0 = 6.283**2
-mat_props = [0.1, k0, 1., -0.5, 1.5, 1., 0.1, 0.97, 1., 0.2, 0.002, 0.1, 1.0*10**-4, 10**6]
+mat_props = [0.1, k0, 1., -0.5, 1.5, 1., 0., 0., 0.]
 change_at2_to_numpy = False
 
-if EQ_generation:
-    BoucWenTesting_EQ_generation.generate_hysteresis(EQ_data_dir,
+if generate_EQ:
+    EQ_generation.generate_hysteresis(EQ_data_dir,
                                                   hysteresis_data_dir,
                                                   target_data,
                                                   change_at2_to_numpy,
@@ -62,23 +64,25 @@ if EQ_generation:
                                                   draw_hysteresis,
                                                   mat_type,
                                                   mat_props,
+                                                  Title,
                                                   EQ_list)
 
 processed_data_dir = hysteresis_data_dir
 val_size = 0.2
 
 normalize_gap = 0.1
-if Preprocessing:
-    BoucWenTesting_Preprocessing.preprocess(n_samples,
+if preprocess:
+    Preprocessing.preprocess(n_samples,
                                         hysteresis_data_dir,
                                         processed_data_dir,
+                                        title=Title,
                                         val_size=val_size,
                                         normalize_gap=normalize_gap)
 
 
 
 # Training
-Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')))
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
@@ -93,8 +97,8 @@ checkpoint = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
-if Training:
-    model = BoucWenTesting_Training.train(X_train,
+if train:
+    model = Training.train(X_train,
                                 y_train,
                                 mask_train,
                                 X_val,
@@ -104,19 +108,20 @@ if Training:
                                 nn_size,
                                 window_size,
                                 checkpoint_dir=model_dir,
+                                title=Title,
                                 checkpoint_epoch=checkpoint_epoch,
                                 existing_checkpoint=checkpoint)
 
-Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './Processed_data.npz')))
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
 model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_short_{}.pth'.format(i+2))) for i in range(0, num_epochs, checkpoint_epoch)]
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/BoucWen Testing_torch/Result Plots'
+result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 
-if ResultAnalysis:
-    BoucWenTesting_ResultAnalysis.result_plot(X_val,
+if analyze_result:
+    ResultAnalysis.result_plot(X_val,
                 y_val,
                 mask_val,
                 X_test,
@@ -124,4 +129,5 @@ if ResultAnalysis:
                 mask_test,
                 nn_size,
                 model_paths,
+                Title,
                 result_plot_dir)

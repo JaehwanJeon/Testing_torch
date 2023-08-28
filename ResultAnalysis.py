@@ -13,6 +13,7 @@ def result_plot(X_val,
                 mask_test,
                 nn_size,
                 model_paths,
+                title,
                 result_plot_dir):
 
     os.makedirs(result_plot_dir, exist_ok=True)
@@ -58,5 +59,5 @@ def result_plot(X_val,
         plt.ylabel('Force (N)', fontsize=12)
         plt.tick_params(axis='both', which='major', labelsize=12)
         plt.legend(['Reference', 'Predicted'], fontsize=12)
-        plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './{}_val.png'.format(i))))
+        plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_{}_val.png'.format(i))))
         plt.close()

@@ -84,6 +84,7 @@ def train(X_train,
           nn_size,
           window_size,
           checkpoint_dir,
+          title,
           checkpoint_epoch,
           existing_checkpoint=False):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -129,9 +130,9 @@ def train(X_train,
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, 'checkpoint_LARGENN_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_LARGENN_{}.pth'.format(epoch+1))))
         
-        np.savez(os.path.normpath(os.path.join(checkpoint_dir, 'losses_LARGENN.npz')), val_loss=val_loss)
+        np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses_LARGENN.npz')), val_loss=val_loss)
     return model
 
 
