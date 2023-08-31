@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
-Title = 'BoucWen'
+Title = 'BWBN'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -50,7 +50,7 @@ n_samples = 80
 draw_hysteresis = True
 mat_type = Title
 k0 = 6.283**2
-mat_props = [0.1, k0, 1., -0.5, 1.5, 1., 0., 0., 0.]
+mat_props = [0.1, k0, 1., -0.5, 1.5, 1., 0.1, 0.97, 1., 0.2, 0.002, 0.1, 1.0*10**-4, 10**6]
 change_at2_to_numpy = False
 
 if generate_EQ:
@@ -92,7 +92,7 @@ model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
 window_size = 512
 checkpoint_epoch = 1
-pretrained = os.path.normpath(os.path.join(model_dir, Title + '_checkpoint_LARGENN_{}.pth'.format(100)))
+pretrained = False
 checkpoint = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
@@ -116,8 +116,8 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
-# model_paths = [os.path.normpath(os.path.join(model_dir, './checkpoint_LARGENN_second_{}.pth'.format(i+1))) for i in range(0, num_epochs, checkpoint_epoch)]
-model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_LARGENN_second_355.pth'))]
+model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + 'checkpoint_second_{}.pth'.format(i+1))) for i in range(0, num_epochs, checkpoint_epoch)]
+# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_LARGENN_second_355.pth'))]
 result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 

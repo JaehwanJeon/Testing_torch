@@ -106,6 +106,7 @@ def train(X_train,
     X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
 
+    val_loss = []
 
     # Training loop
     for epoch in range(num_epochs):
@@ -128,7 +129,6 @@ def train(X_train,
             
         avg_loss = sum(losses) / len(losses)
         
-        val_loss = []
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
             print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
@@ -136,9 +136,9 @@ def train(X_train,
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_LARGENN_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_LARGENN_second_{}.pth'.format(epoch+1))))
         
-        np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses_LARGENN.npz')), val_loss=val_loss)
+    np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses.npz')), train_loss=avg_loss, val_loss=val_loss)
     return model
 
 
