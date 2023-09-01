@@ -136,7 +136,7 @@ def train(X_train,
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
-            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_LARGENN_second_{}.pth'.format(epoch+1))))
+            torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))
         
     np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses.npz')), train_loss=avg_loss, val_loss=val_loss)
     return model
