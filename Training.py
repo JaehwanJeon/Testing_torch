@@ -64,21 +64,74 @@ class CustomLSTM(nn.Module):
         batch_size, seq_length, _ = x.size()
 
         if states is None:
-            h, c = torch.zeros(batch_size, self.hidden_dim).to(x.device), torch.zeros(batch_size, self.hidden_dim).to(x.device)
+            h = torch.zeros(batch_size, self.hidden_dim).to(x.device)
+            c = torch.zeros(batch_size, self.hidden_dim).to(x.device)
+            prev_output = torch.zeros(batch_size, 1).to(x.device)
+            energy = torch.zeros(batch_size, 1).to(x.device)
+            previous_x = torch.zeros(batch_size, 1).to(x.device)  # Initialize previous_x with zeros
         else:
-            h, c = states
+            h, c, prev_output, energy, previous_x = states
 
         outputs = []
+        energies = []
         for t in range(seq_length):
             h, c = self.cell(x[:, t, :], (h, c))
             output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
+            
+            # Calculate and accumulate energy using the trapezoid rule
+            current_x = x[:, t, 0].unsqueeze(1)
+            delta_disp = current_x - previous_x
+            energy += (output + prev_output) / 2 * delta_disp
+            energies.append(energy)
+            prev_output = output
+            previous_x = current_x
             outputs.append(output)
-        return torch.stack(outputs, dim=1), (h, c)
+
+        return torch.stack(outputs, dim=1), torch.stack(energies, dim=1), (h, c, prev_output, energy, previous_x)
+
     
 
 def custom_loss(y_pred, y, mask):
     loss = torch.mean((y_pred - y)**2 * mask)
     return loss
+
+def drucker_loss(f, e, bool_mask):
+    f, e = f[:, bool_mask], e[:, bool_mask]
+    num_samples, time_length = f.shape
+    loss = torch.zeros(num_samples).to(f.device)
+
+    for sample_idx in range(num_samples):
+        e_fl_values = torch.zeros(time_length).to(f.device)
+        e_bl_values = torch.zeros(time_length).to(f.device)
+
+        for i in range(time_length):
+            # Forward loop
+            for j in range(i + 1, time_length - 1):
+                if f[sample_idx, j] == f[sample_idx, i] == f[sample_idx, j + 1]:
+                    e_fl_values[i] = e[sample_idx, j] - e[sample_idx, i]
+                    break
+                elif (f[sample_idx, j] < f[sample_idx, i] <= f[sample_idx, j + 1]) or (f[sample_idx, j] > f[sample_idx, i] >= f[sample_idx, j + 1]):
+                    e_fl_values[i] = lin_interp(f[sample_idx, i], f[sample_idx, j], e[sample_idx, j], f[sample_idx, j + 1], e[sample_idx, j + 1]) - e[sample_idx, i]
+                    break
+
+            # Backward loop
+            for k in range(i - 1, 0, -1):
+                if f[sample_idx, k] == f[sample_idx, i] == f[sample_idx, k + 1]:
+                    e_bl_values[i] = e[sample_idx, i] - e[sample_idx, k]
+                    break
+                elif (f[sample_idx, k] < f[sample_idx, i] <= f[sample_idx, k + 1]) or (f[sample_idx, k] > f[sample_idx, i] >= f[sample_idx, k + 1]):
+                    e_bl_values[i] = e[sample_idx, i] - lin_interp(f[sample_idx, i], f[sample_idx, k], e[sample_idx, k], f[sample_idx, k + 1], e[sample_idx, k + 1])
+                    break
+
+            loss[sample_idx] += torch.max(torch.tensor(0.0).to(f.device), -e_fl_values[i]) + torch.max(torch.tensor(0.0).to(f.device), -e_bl_values[i])
+
+    return torch.mean(loss)
+
+def combined_loss(x, y_pred, y, mask, alpha=0.5):
+    mse_loss = torch.mean((y_pred - y)**2 * mask)
+    bool_mask = mask.bool()
+    phys_loss = drucker_loss(y_pred, energy, bool_mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+    return (1-alpha) * mse_loss + alpha * phys_loss
 
 def train(X_train,
           y_train,
@@ -118,7 +171,7 @@ def train(X_train,
             inputs = X_train[:, step:step+window_size]
             labels = y_train[:, step:step+window_size]
 
-            outputs, states = model(inputs, states)
+            outputs, _,  states = model(inputs, states)
             loss = criterion(outputs[:, :, 0], labels, mask_train[:, step:step+window_size])
             losses.append(loss.item())
             optimizer.zero_grad()
@@ -132,7 +185,7 @@ def train(X_train,
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
             print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
-            y_pred, _ = model(X_val)
+            y_pred, _,  _ = model(X_val)
             loss = criterion(y_pred[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
@@ -143,3 +196,7 @@ def train(X_train,
 
 
 
+def lin_interp(x, p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    return y1 + (x - x1) * (y2 - y1) / (x2 - x1)
