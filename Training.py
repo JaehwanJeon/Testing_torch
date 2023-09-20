@@ -5,6 +5,7 @@ Any ways to save history?
 """
 
 import os
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import numpy as np
@@ -81,7 +82,7 @@ class CustomLSTM(nn.Module):
             # Calculate and accumulate energy using the trapezoid rule
             current_x = x[:, t, 0].unsqueeze(1)
             delta_disp = current_x - previous_x
-            energy += (output + prev_output) / 2 * delta_disp
+            energy = energy + (output + prev_output) / 2 * delta_disp
             energies.append(energy)
             prev_output = output
             previous_x = current_x
@@ -127,10 +128,10 @@ def drucker_loss(f, e, bool_mask):
 
     return torch.mean(loss)
 
-def combined_loss(x, y_pred, y, mask, alpha=0.5):
+def combined_loss(y_pred, y, energies, mask, alpha=0.5):
     mse_loss = torch.mean((y_pred - y)**2 * mask)
     bool_mask = mask.bool()
-    phys_loss = drucker_loss(y_pred, energy, bool_mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+    phys_loss = drucker_loss(y_pred, energies, bool_mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
     return (1-alpha) * mse_loss + alpha * phys_loss
 
 def train(X_train,
@@ -171,14 +172,21 @@ def train(X_train,
             inputs = X_train[:, step:step+window_size]
             labels = y_train[:, step:step+window_size]
 
-            outputs, _,  states = model(inputs, states)
+            outputs, energies,  states = model(inputs, states)
+
+            # # For debugging
+            # plt.plot(energies[0, :, 0].cpu().detach().numpy())
+            # plt.savefig(os.path.normpath(os.path.join(checkpoint_dir, './Temp/' + title + '_energy_training_temp.png')))
+            # plt.close()
+            # #
+
             loss = criterion(outputs[:, :, 0], labels, mask_train[:, step:step+window_size])
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-            states = (states[0].detach(), states[1].detach())
+            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach())
             
         avg_loss = sum(losses) / len(losses)
         

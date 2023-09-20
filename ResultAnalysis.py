@@ -4,6 +4,7 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 import Training
+from scipy.integrate import cumtrapz
 
 def result_plot(X_val,
                 y_val,
@@ -30,7 +31,25 @@ def result_plot(X_val,
         model.load_state_dict(checkpoint)
         model = model.to(device)
         model.eval()
-        y_val_pred, _ = model(X_val)
+        y_val_pred, energies_val, _ = model(X_val)
+
+        # # For debugging        
+        # mask_val_ = mask_val.cpu().detach().numpy()
+        # energies_val_ = energies_val.cpu().detach().numpy()
+        # mask_val_ = mask_val_.astype(int).astype(bool)[0, :]
+        # energies_val_ = energies_val_[0, mask_val_, 0]
+        # y_val_pred_ = y_val_pred.cpu().detach().numpy()
+        # y_val_pred_ = y_val_pred_[0, mask_val_, 0]
+        # X_val_ = X_val.cpu().detach().numpy()
+        # X_val_ = X_val_[0, mask_val_, 0]
+        # energies_ref = cumtrapz(y_val_pred_, X_val_, initial=0)
+
+        # plt.plot(energies_val_)
+        # plt.plot(energies_ref)
+        # plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_energy_temp.png')))
+        # plt.close()
+        # #
+
         loss = Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
         losses.append(loss.item())
         print('Validation Loss: {}'.format(loss.item()))
@@ -41,7 +60,7 @@ def result_plot(X_val,
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
-    y_val_pred, _ = model(X_val)
+    y_val_pred, energies_val, _ = model(X_val)
     y_val_pred = y_val_pred.cpu().detach().numpy()
     X_val = X_val.cpu().detach().numpy()
     y_val = y_val.cpu().detach().numpy()
