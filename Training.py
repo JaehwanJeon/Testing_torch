@@ -97,34 +97,64 @@ def custom_loss(y_pred, y, mask):
     return loss
 
 def drucker_loss(f, e, bool_mask):
-    f, e = f[:, bool_mask], e[:, bool_mask]
-    num_samples, time_length = f.shape
+    num_samples = f.size()[0]
     loss = torch.zeros(num_samples).to(f.device)
-
+    zero_tensor = torch.tensor(0.0).to(f.device)
     for sample_idx in range(num_samples):
+        f_sample = f[sample_idx, bool_mask[sample_idx]]
+        e_sample = e[sample_idx, bool_mask[sample_idx]]
+        time_length = f_sample.size()[0]
+
         e_fl_values = torch.zeros(time_length).to(f.device)
         e_bl_values = torch.zeros(time_length).to(f.device)
 
         for i in range(time_length):
             # Forward loop
             for j in range(i + 1, time_length - 1):
-                if f[sample_idx, j] == f[sample_idx, i] == f[sample_idx, j + 1]:
-                    e_fl_values[i] = e[sample_idx, j] - e[sample_idx, i]
+                if f_sample[j] == f_sample[i] == f_sample[j + 1]:
+                    e_fl_values[i] = e_sample[j] - e_sample[i]
                     break
-                elif (f[sample_idx, j] < f[sample_idx, i] <= f[sample_idx, j + 1]) or (f[sample_idx, j] > f[sample_idx, i] >= f[sample_idx, j + 1]):
-                    e_fl_values[i] = lin_interp(f[sample_idx, i], f[sample_idx, j], e[sample_idx, j], f[sample_idx, j + 1], e[sample_idx, j + 1]) - e[sample_idx, i]
+                elif (f_sample[j] < f_sample[i] <= f_sample[j + 1]) or (f_sample[j] > f_sample[i] >= f_sample[j + 1]):
+                    e_fl_values[i] = lin_interp(f_sample[i], (f_sample[j], e_sample[j]), (f_sample[j + 1], e_sample[j + 1])) - e_sample[i]
                     break
 
             # Backward loop
             for k in range(i - 1, 0, -1):
-                if f[sample_idx, k] == f[sample_idx, i] == f[sample_idx, k + 1]:
-                    e_bl_values[i] = e[sample_idx, i] - e[sample_idx, k]
+                if f_sample[k] == f_sample[i] == f_sample[k + 1]:
+                    e_bl_values[i] = e_sample[i] - e_sample[k]
                     break
-                elif (f[sample_idx, k] < f[sample_idx, i] <= f[sample_idx, k + 1]) or (f[sample_idx, k] > f[sample_idx, i] >= f[sample_idx, k + 1]):
-                    e_bl_values[i] = e[sample_idx, i] - lin_interp(f[sample_idx, i], f[sample_idx, k], e[sample_idx, k], f[sample_idx, k + 1], e[sample_idx, k + 1])
+                elif (f_sample[k] < f_sample[i] <= f_sample[k + 1]) or (f_sample[k] > f_sample[i] >= f_sample[k + 1]):
+                    e_bl_values[i] = e_sample[i] - lin_interp(f_sample[i], (f_sample[k], e_sample[k]), (f_sample[k + 1], e_sample[k + 1]))
                     break
+            loss[sample_idx] = loss[sample_idx] + torch.max(zero_tensor, -e_fl_values[i]) + torch.max(zero_tensor, -e_bl_values[i])
+    # f, e = f[bool_mask], e[bool_mask]
+    # num_samples, time_length = f.size()
+    # loss = torch.zeros(num_samples).to(f.device)
 
-            loss[sample_idx] += torch.max(torch.tensor(0.0).to(f.device), -e_fl_values[i]) + torch.max(torch.tensor(0.0).to(f.device), -e_bl_values[i])
+    # for sample_idx in range(num_samples):
+    #     e_fl_values = torch.zeros(time_length).to(f.device)
+    #     e_bl_values = torch.zeros(time_length).to(f.device)
+
+    #     for i in range(time_length):
+    #         # Forward loop
+    #         for j in range(i + 1, time_length - 1):
+    #             if f[sample_idx, j] == f[sample_idx, i] == f[sample_idx, j + 1]:
+    #                 e_fl_values[i] = e[sample_idx, j] - e[sample_idx, i]
+    #                 break
+    #             elif (f[sample_idx, j] < f[sample_idx, i] <= f[sample_idx, j + 1]) or (f[sample_idx, j] > f[sample_idx, i] >= f[sample_idx, j + 1]):
+    #                 e_fl_values[i] = lin_interp(f[sample_idx, i], f[sample_idx, j], e[sample_idx, j], f[sample_idx, j + 1], e[sample_idx, j + 1]) - e[sample_idx, i]
+    #                 break
+
+    #         # Backward loop
+    #         for k in range(i - 1, 0, -1):
+    #             if f[sample_idx, k] == f[sample_idx, i] == f[sample_idx, k + 1]:
+    #                 e_bl_values[i] = e[sample_idx, i] - e[sample_idx, k]
+    #                 break
+    #             elif (f[sample_idx, k] < f[sample_idx, i] <= f[sample_idx, k + 1]) or (f[sample_idx, k] > f[sample_idx, i] >= f[sample_idx, k + 1]):
+    #                 e_bl_values[i] = e[sample_idx, i] - lin_interp(f[sample_idx, i], f[sample_idx, k], e[sample_idx, k], f[sample_idx, k + 1], e[sample_idx, k + 1])
+    #                 break
+
+    #         loss[sample_idx] += torch.max(torch.tensor(0.0).to(f.device), -e_fl_values[i]) + torch.max(torch.tensor(0.0).to(f.device), -e_bl_values[i])
 
     return torch.mean(loss)
 
@@ -155,7 +185,7 @@ def train(X_train,
         model.load_state_dict(existing_checkpoint)
     model = model.to(device)
 
-    criterion = custom_loss
+    criterion = combined_loss
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
@@ -180,7 +210,7 @@ def train(X_train,
             # plt.close()
             # #
 
-            loss = criterion(outputs[:, :, 0], labels, mask_train[:, step:step+window_size])
+            loss = criterion(outputs[:, :, 0], labels, energies[:, :, 0], mask_train[:, step:step+window_size], alpha=0.5)
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
@@ -193,8 +223,8 @@ def train(X_train,
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
             print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
-            y_pred, _,  _ = model(X_val)
-            loss = criterion(y_pred[:, :, 0], y_val, mask_val)
+            outputs, energies,  _ = model(X_val)
+            loss = criterion(outputs[:, :, 0], y_val, energies, mask_val, alpha=0.5)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
             torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))

@@ -4,7 +4,6 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 import Training
-from scipy.integrate import cumtrapz
 
 def result_plot(X_val,
                 y_val,

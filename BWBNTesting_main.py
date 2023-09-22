@@ -24,7 +24,7 @@ preprocess = False
 train = True
 analyze_result = True
 
-Title = 'BWBN_energy_save'
+Title = 'BWBN_energy_Drucker'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
