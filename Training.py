@@ -96,72 +96,45 @@ def custom_loss(y_pred, y, mask):
     loss = torch.mean((y_pred - y)**2 * mask)
     return loss
 
-def drucker_loss(f, e, bool_mask):
-    num_samples = f.size()[0]
-    loss = torch.zeros(num_samples).to(f.device)
-    zero_tensor = torch.tensor(0.0).to(f.device)
-    for sample_idx in range(num_samples):
-        f_sample = f[sample_idx, bool_mask[sample_idx]]
-        e_sample = e[sample_idx, bool_mask[sample_idx]]
-        time_length = f_sample.size()[0]
+def drucker_loss(f, e, mask):
+    num_samples, time_length = f.size()
+    f, e = f * mask, e * mask
+    num_chops = 201
+    chop_vector = torch.linspace(-1, 1, num_chops).to(f.device)
+    
+    f_expanded = f.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
+    e_expanded = e.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
+    chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(0).expand(num_samples, time_length, -1)
+    deducted_f_expanded = f_expanded - chop_vector_expanded
+    # Create deducted_f_sign tensor with size [num_samples, time_length, num_chops]
+    deducted_f_sign = (deducted_f_expanded > 0).int()
+    
+    diff_sign = torch.diff(deducted_f_sign, dim=1, prepend=deducted_f_sign[:, 0, :].unsqueeze(1))
+    change_idx = (diff_sign != 0)
+    selected_e = torch.where(change_idx, e_expanded, torch.full_like(e_expanded, float('nan')))
 
-        e_fl_values = torch.zeros(time_length).to(f.device)
-        e_bl_values = torch.zeros(time_length).to(f.device)
+    mask_no_nan = ~torch.isnan(selected_e)
 
-        for i in range(time_length):
-            # Forward loop
-            for j in range(i + 1, time_length - 1):
-                if f_sample[j] == f_sample[i] == f_sample[j + 1]:
-                    e_fl_values[i] = e_sample[j] - e_sample[i]
-                    break
-                elif (f_sample[j] < f_sample[i] <= f_sample[j + 1]) or (f_sample[j] > f_sample[i] >= f_sample[j + 1]):
-                    e_fl_values[i] = lin_interp(f_sample[i], (f_sample[j], e_sample[j]), (f_sample[j + 1], e_sample[j + 1])) - e_sample[i]
-                    break
+    reordered_e = selected_e.permute(2, 0, 1)
+    reordered_mask = mask_no_nan.permute(2, 0, 1)
 
-            # Backward loop
-            for k in range(i - 1, 0, -1):
-                if f_sample[k] == f_sample[i] == f_sample[k + 1]:
-                    e_bl_values[i] = e_sample[i] - e_sample[k]
-                    break
-                elif (f_sample[k] < f_sample[i] <= f_sample[k + 1]) or (f_sample[k] > f_sample[i] >= f_sample[k + 1]):
-                    e_bl_values[i] = e_sample[i] - lin_interp(f_sample[i], (f_sample[k], e_sample[k]), (f_sample[k + 1], e_sample[k + 1]))
-                    break
-            loss[sample_idx] = loss[sample_idx] + torch.max(zero_tensor, -e_fl_values[i]) + torch.max(zero_tensor, -e_bl_values[i])
-    # f, e = f[bool_mask], e[bool_mask]
-    # num_samples, time_length = f.size()
-    # loss = torch.zeros(num_samples).to(f.device)
+    valid_indices = torch.stack(reordered_mask.nonzero(as_tuple=True), dim=-1)
 
-    # for sample_idx in range(num_samples):
-    #     e_fl_values = torch.zeros(time_length).to(f.device)
-    #     e_bl_values = torch.zeros(time_length).to(f.device)
+    valid_values = reordered_e[valid_indices[:, 0], valid_indices[:, 1], valid_indices[:, 2]]
 
-    #     for i in range(time_length):
-    #         # Forward loop
-    #         for j in range(i + 1, time_length - 1):
-    #             if f[sample_idx, j] == f[sample_idx, i] == f[sample_idx, j + 1]:
-    #                 e_fl_values[i] = e[sample_idx, j] - e[sample_idx, i]
-    #                 break
-    #             elif (f[sample_idx, j] < f[sample_idx, i] <= f[sample_idx, j + 1]) or (f[sample_idx, j] > f[sample_idx, i] >= f[sample_idx, j + 1]):
-    #                 e_fl_values[i] = lin_interp(f[sample_idx, i], f[sample_idx, j], e[sample_idx, j], f[sample_idx, j + 1], e[sample_idx, j + 1]) - e[sample_idx, i]
-    #                 break
+    diff_indices = valid_indices[1:] - valid_indices[:-1]
 
-    #         # Backward loop
-    #         for k in range(i - 1, 0, -1):
-    #             if f[sample_idx, k] == f[sample_idx, i] == f[sample_idx, k + 1]:
-    #                 e_bl_values[i] = e[sample_idx, i] - e[sample_idx, k]
-    #                 break
-    #             elif (f[sample_idx, k] < f[sample_idx, i] <= f[sample_idx, k + 1]) or (f[sample_idx, k] > f[sample_idx, i] >= f[sample_idx, k + 1]):
-    #                 e_bl_values[i] = e[sample_idx, i] - lin_interp(f[sample_idx, i], f[sample_idx, k], e[sample_idx, k], f[sample_idx, k + 1], e[sample_idx, k + 1])
-    #                 break
+    differences = (valid_values[1:] - valid_values[:-1]) * (diff_indices[:, 0] == 0) * (diff_indices[:, 1] == 0)
+    
+    differences_neg = -differences
+    negative_values_only = (torch.abs(differences_neg) + differences_neg) / 2
+    
+    return torch.sum(negative_values_only)/num_samples
 
-    #         loss[sample_idx] += torch.max(torch.tensor(0.0).to(f.device), -e_fl_values[i]) + torch.max(torch.tensor(0.0).to(f.device), -e_bl_values[i])
-
-    return torch.mean(loss)
 
 def combined_loss(y_pred, y, energies, mask, alpha=0.5):
     mse_loss = torch.mean((y_pred - y)**2 * mask)
-    bool_mask = mask.bool()
-    phys_loss = drucker_loss(y_pred, energies, bool_mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+    phys_loss = drucker_loss(y_pred, energies, mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
     return (1-alpha) * mse_loss + alpha * phys_loss
 
 def train(X_train,
@@ -224,7 +197,7 @@ def train(X_train,
         if (epoch + 1) % checkpoint_epoch == 0:
             print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
             outputs, energies,  _ = model(X_val)
-            loss = criterion(outputs[:, :, 0], y_val, energies, mask_val, alpha=0.5)
+            loss = criterion(outputs[:, :, 0], y_val, energies[:, :, 0], mask_val, alpha=0.5)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
             torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))
