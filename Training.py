@@ -98,10 +98,9 @@ def custom_loss(y_pred, y, mask):
 
 def drucker_loss(f, e, mask):
     num_samples, time_length = f.size()
-    f, e = f * mask, e * mask
     num_chops = 201
     chop_vector = torch.linspace(-1, 1, num_chops).to(f.device)
-    
+    mask_expanded = mask.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
     f_expanded = f.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
     e_expanded = e.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
     chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(0).expand(num_samples, time_length, -1)
@@ -110,7 +109,7 @@ def drucker_loss(f, e, mask):
     deducted_f_sign = (deducted_f_expanded > 0).int()
     
     diff_sign = torch.diff(deducted_f_sign, dim=1, prepend=deducted_f_sign[:, 0, :].unsqueeze(1))
-    change_idx = (diff_sign != 0)
+    change_idx = ((diff_sign != 0) * mask_expanded).bool()
     selected_e = torch.where(change_idx, e_expanded, torch.full_like(e_expanded, float('nan')))
 
     mask_no_nan = ~torch.isnan(selected_e)
@@ -129,13 +128,20 @@ def drucker_loss(f, e, mask):
     differences_neg = -differences
     negative_values_only = (torch.abs(differences_neg) + differences_neg) / 2
     
-    return torch.sum(negative_values_only)/num_samples
+    return torch.sum(negative_values_only) / (num_samples * time_length)
 
+class Loss:
+    def __init__(self, y_pred, y, energies, mask, device):
+        self.mse_loss = (torch.mean((y_pred - y)**2 * mask)).to(device).detach()
+        self.phys_loss = (drucker_loss(y_pred, energies, mask)).to(device).detach()
+        print('MSE Loss / Phys Loss will be normalized by {}/{}'.format(self.mse_loss, self.phys_loss))
+        pass
 
-def combined_loss(y_pred, y, energies, mask, alpha=0.5):
-    mse_loss = torch.mean((y_pred - y)**2 * mask)
-    phys_loss = drucker_loss(y_pred, energies, mask)  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
-    return (1-alpha) * mse_loss + alpha * phys_loss
+    def combined_loss(self, y_pred, y, energies, mask, alpha=0.2):
+        mse_loss = torch.mean((y_pred - y)**2 * mask) / self.mse_loss
+        phys_loss = drucker_loss(y_pred, energies, mask) / self.phys_loss  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+        print('MSE Loss / Phys Loss: {:.8f}/{:.8f}'.format(mse_loss, phys_loss), end='\r')
+        return (1-alpha) * mse_loss + alpha * phys_loss
 
 def train(X_train,
           y_train,
@@ -158,20 +164,25 @@ def train(X_train,
         model.load_state_dict(existing_checkpoint)
     model = model.to(device)
 
-    criterion = combined_loss
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
     X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
 
     val_loss = []
+    # Obtaining initial normalization factor for data-driven loss vs physics-based loss
+    states = None
+    model.eval()
+    outputs, energies, states = model(X_train, states)
+    criterion = Loss(outputs[:, :, 0], y_train, energies[:, :, 0], mask_train, device).combined_loss
 
     # Training loop
+    model.train()
     for epoch in range(num_epochs):
         states = None
         losses = []
         print('Epoch:', epoch+1)
         for step in range(0, X_train.shape[1]-window_size, window_size):
-            print('Step:', step, '//', X_train.shape[1]-window_size, end='\r')
+            # print('Step:', step, '//', X_train.shape[1]-window_size, end='\r')
             inputs = X_train[:, step:step+window_size]
             labels = y_train[:, step:step+window_size]
 
@@ -195,9 +206,9 @@ def train(X_train,
         
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
-            print(f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
+            print('\n', f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
             outputs, energies,  _ = model(X_val)
-            loss = criterion(outputs[:, :, 0], y_val, energies[:, :, 0], mask_val, alpha=0.5)
+            loss = custom_loss(outputs[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
             torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))
@@ -207,7 +218,3 @@ def train(X_train,
 
 
 
-def lin_interp(x, p1, p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return y1 + (x - x1) * (y2 - y1) / (x2 - x1)
