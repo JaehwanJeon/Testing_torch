@@ -21,7 +21,7 @@ import ResultAnalysis
 
 generate_EQ = False
 preprocess = False
-train = False
+train = True
 analyze_result = True
 
 Title = 'BWBN_energy_Drucker'
@@ -86,12 +86,14 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
+max_len_train = np.argmin(mask_train.sum(axis=0))
+X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 128
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
 window_size = 1024
-checkpoint_epoch = 1
+checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
 if pretrained != False:

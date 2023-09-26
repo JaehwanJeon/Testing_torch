@@ -177,6 +177,7 @@ def train(X_train,
 
     # Training loop
     model.train()
+    epoch_losses = []
     for epoch in range(num_epochs):
         states = None
         losses = []
@@ -203,17 +204,18 @@ def train(X_train,
             states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach())
             
         avg_loss = sum(losses) / len(losses)
-        
+        epoch_losses.append(avg_loss)
+        print('\n', f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')        
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
-            print('\n', f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')
+
             outputs, energies,  _ = model(X_val)
             loss = custom_loss(outputs[:, :, 0], y_val, mask_val)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
             torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))
         
-    np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses.npz')), train_loss=avg_loss, val_loss=val_loss)
+    np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses.npz')), train_loss=epoch_losses, val_loss=val_loss)
     return model
 
 
