@@ -19,6 +19,9 @@ class CustomLSTMCell(nn.Module):
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         
+        # Linear transformation for energy
+        self.energy_transform = nn.Linear(1, 1, bias=False)
+        
         # Input gate
         self.fc_i = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
         self.ln_i = nn.LayerNorm(self.hidden_dim)
@@ -37,7 +40,10 @@ class CustomLSTMCell(nn.Module):
     def forward(self, x, energy, states):
         h, c = states
         
-        h_combined = torch.cat([x, energy, h], 1)  # concatenate along the feature dimension
+        # Transform the energy
+        transformed_energy = torch.tanh(self.energy_transform(energy))
+        
+        h_combined = torch.cat([x, transformed_energy, h], 1)  # concatenate along the feature dimension
 
         i = torch.sigmoid(self.ln_i(self.fc_i(h_combined)))
         f = torch.sigmoid(self.ln_f(self.fc_f(h_combined)))
