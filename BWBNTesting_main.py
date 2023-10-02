@@ -21,7 +21,7 @@ import ResultAnalysis
 
 generate_EQ = False
 preprocess = False
-train = True
+train = False
 analyze_result = True
 
 Title = 'BWBN_energy_Drucker'
@@ -89,10 +89,11 @@ X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_va
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 128
+alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
-window_size = 1024
+window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
@@ -108,6 +109,7 @@ if train:
                                 mask_val,
                                 num_epochs,
                                 nn_size,
+                                alpha,
                                 window_size,
                                 checkpoint_dir=model_dir,
                                 title=Title,
@@ -118,8 +120,8 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
-# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+1))) for i in range(0, 370, checkpoint_epoch)]
-model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
+model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
+# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
 result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 

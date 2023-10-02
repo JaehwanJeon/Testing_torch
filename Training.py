@@ -97,38 +97,33 @@ def custom_loss(y_pred, y, mask):
     return loss
 
 def drucker_loss(f, e, mask):
+    
     num_samples, time_length = f.size()
     num_chops = 201
     chop_vector = torch.linspace(-1, 1, num_chops).to(f.device)
-    mask_expanded = mask.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
-    f_expanded = f.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
-    e_expanded = e.unsqueeze(2).expand(-1, -1, chop_vector.size(0))
-    chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(0).expand(num_samples, time_length, -1)
+
+    # Expand the mask and tensors along the second axis
+    mask_expanded = mask.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+    f_expanded = f.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+    e_expanded = e.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+
+    chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(-1).expand(num_samples, -1, time_length)
     deducted_f_expanded = f_expanded - chop_vector_expanded
-    # Create deducted_f_sign tensor with size [num_samples, time_length, num_chops]
+
+    # Create deducted_f_sign tensor with size [num_samples, num_chops, time_length]
     deducted_f_sign = (deducted_f_expanded > 0).int()
+
+    diff_sign = torch.diff(deducted_f_sign, dim=2, prepend=deducted_f_sign[:, :, 0].unsqueeze(2))
+    change_bool = ((diff_sign != 0) * mask_expanded).bool()
+    change_idx = torch.nonzero(change_bool)
+    selected_e = e_expanded[change_idx[:, 0], change_idx[:, 1], change_idx[:, 2]]
+    diff_e = selected_e[1:] - selected_e[:-1]
+    diff_idx = change_idx[1:] - change_idx[:-1]
+    diff_e = diff_e * (diff_idx[:, 0] == 0) * (diff_idx[:, 1] == 0)
+    diff_e_neg = diff_e[diff_e < 0]
+    return -torch.sum(diff_e_neg) / (num_samples * time_length)
     
-    diff_sign = torch.diff(deducted_f_sign, dim=1, prepend=deducted_f_sign[:, 0, :].unsqueeze(1))
-    change_idx = ((diff_sign != 0) * mask_expanded).bool()
-    selected_e = torch.where(change_idx, e_expanded, torch.full_like(e_expanded, float('nan')))
 
-    mask_no_nan = ~torch.isnan(selected_e)
-
-    reordered_e = selected_e.permute(2, 0, 1)
-    reordered_mask = mask_no_nan.permute(2, 0, 1)
-
-    valid_indices = torch.stack(reordered_mask.nonzero(as_tuple=True), dim=-1)
-
-    valid_values = reordered_e[valid_indices[:, 0], valid_indices[:, 1], valid_indices[:, 2]]
-
-    diff_indices = valid_indices[1:] - valid_indices[:-1]
-
-    differences = (valid_values[1:] - valid_values[:-1]) * (diff_indices[:, 0] == 0) * (diff_indices[:, 1] == 0)
-    
-    differences_neg = -differences
-    negative_values_only = (torch.abs(differences_neg) + differences_neg) / 2
-    
-    return torch.sum(negative_values_only) / (num_samples * time_length)
 
 class Loss:
     def __init__(self, y_pred, y, energies, mask, device):
@@ -151,6 +146,7 @@ def train(X_train,
           mask_val,
           num_epochs,
           nn_size,
+          alpha,
           window_size,
           checkpoint_dir,
           title,
@@ -195,7 +191,7 @@ def train(X_train,
             # plt.close()
             # #
 
-            loss = criterion(outputs[:, :, 0], labels, energies[:, :, 0], mask_train[:, step:step+window_size], alpha=0.5)
+            loss = criterion(outputs[:, :, 0], labels, energies[:, :, 0], mask_train[:, step:step+window_size], alpha=alpha)
             losses.append(loss.item())
             optimizer.zero_grad()
             loss.backward()
