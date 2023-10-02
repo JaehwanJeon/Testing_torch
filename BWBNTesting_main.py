@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
-Title = 'BWBN_energy_Drucker'
+Title = 'BWBN_energy_input_Drucker'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'

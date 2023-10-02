@@ -20,29 +20,29 @@ class CustomLSTMCell(nn.Module):
         self.hidden_dim = hidden_dim
         
         # Input gate
-        self.fc_i = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.fc_i = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
         self.ln_i = nn.LayerNorm(self.hidden_dim)
         # Forget gate
-        self.fc_f = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.fc_f = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
         self.ln_f = nn.LayerNorm(self.hidden_dim)
         # Cell state
-        self.fc_c = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.fc_c = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
         self.ln_c = nn.LayerNorm(self.hidden_dim)
         # Output gate
-        self.fc_o = nn.Linear(self.input_dim + self.hidden_dim, self.hidden_dim)
+        self.fc_o = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
         self.ln_o = nn.LayerNorm(self.hidden_dim)
 
         self.ln_h = nn.LayerNorm(self.hidden_dim)
 
-    def forward(self, x, states):
+    def forward(self, x, energy, states):
         h, c = states
         
-        combined = torch.cat([x, h], 1)  # concatenate along the feature dimension
+        h_combined = torch.cat([x, energy, h], 1)  # concatenate along the feature dimension
 
-        i = torch.sigmoid(self.ln_i(self.fc_i(combined)))
-        f = torch.sigmoid(self.ln_f(self.fc_f(combined)))
-        g = torch.tanh(self.ln_c(self.fc_c(combined)))
-        o = torch.sigmoid(self.ln_o(self.fc_o(combined)))
+        i = torch.sigmoid(self.ln_i(self.fc_i(h_combined)))
+        f = torch.sigmoid(self.ln_f(self.fc_f(h_combined)))
+        g = torch.tanh(self.ln_c(self.fc_c(h_combined)))
+        o = torch.sigmoid(self.ln_o(self.fc_o(h_combined)))
         
         c_next = f * c + i * g
         h_next = self.ln_h(o * torch.tanh(c_next) + h)    # Adding residual connection
@@ -76,7 +76,7 @@ class CustomLSTM(nn.Module):
         outputs = []
         energies = []
         for t in range(seq_length):
-            h, c = self.cell(x[:, t, :], (h, c))
+            h, c = self.cell(x[:, t, :], energy, (h, c))
             output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
             
             # Calculate and accumulate energy using the trapezoid rule
