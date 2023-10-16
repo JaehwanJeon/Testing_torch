@@ -24,31 +24,27 @@ class CustomLSTMCell(nn.Module):
         
         # Input gate
         self.fc_i = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
-        self.ln_i = nn.LayerNorm(self.hidden_dim)
         # Forget gate
         self.fc_f = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
-        self.ln_f = nn.LayerNorm(self.hidden_dim)
         # Cell state
         self.fc_c = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
-        self.ln_c = nn.LayerNorm(self.hidden_dim)
         # Output gate
         self.fc_o = nn.Linear(self.input_dim + self.hidden_dim + 1, self.hidden_dim)
-        self.ln_o = nn.LayerNorm(self.hidden_dim)
 
         self.ln_h = nn.LayerNorm(self.hidden_dim)
 
     def forward(self, x, energy, states):
         h, c = states
-        
+        h_normalized = self.ln_h(h)
         # Transform the energy
         transformed_energy = torch.tanh(self.energy_transform(energy))
         
-        h_combined = torch.cat([x, transformed_energy, h], 1)  # concatenate along the feature dimension
+        h_combined = torch.cat([x, transformed_energy, h_normalized], 1)  # concatenate along the feature dimension
 
-        i = torch.sigmoid(self.ln_i(self.fc_i(h_combined)))
-        f = torch.sigmoid(self.ln_f(self.fc_f(h_combined)))
-        g = torch.tanh(self.ln_c(self.fc_c(h_combined)))
-        o = torch.sigmoid(self.ln_o(self.fc_o(h_combined)))
+        i = torch.sigmoid((self.fc_i(h_combined)))
+        f = torch.sigmoid((self.fc_f(h_combined)))
+        g = torch.tanh((self.fc_c(h_combined)))
+        o = torch.sigmoid((self.fc_o(h_combined)))
         
         c_next = f * c + i * g
         h_next = self.ln_h(o * torch.tanh(c_next) + h)    # Adding residual connection
