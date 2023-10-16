@@ -21,7 +21,7 @@ import ResultAnalysis
 
 generate_EQ = False
 preprocess = False
-train = True
+train = False
 analyze_result = True
 
 Title = 'BWBN_energy_input_Drucker'

@@ -4,6 +4,8 @@ import torch.nn as nn
 import numpy as np
 import matplotlib.pyplot as plt
 import Training
+import re
+import pandas as pd
 
 def result_plot(X_val,
                 y_val,
@@ -22,37 +24,30 @@ def result_plot(X_val,
     X_val, X_test = torch.from_numpy(X_val).float().to(device), torch.from_numpy(X_test).float().to(device)
     y_val, y_test = torch.from_numpy(y_val).float().to(device), torch.from_numpy(y_test).float().to(device)
     mask_val, mask_test = torch.from_numpy(mask_val).float().to(device), torch.from_numpy(mask_test).float().to(device)
-    
+
+    epochs = []
     losses = []
+    weights = []
     for model_path in model_paths:
+        match = re.search('_checkpoint_(\d+).pth', model_path)
+        if match:
+            epoch =  int(match.group(1))
         checkpoint = torch.load(model_path)
         model = Training.CustomLSTM(2, nn_size, 1)
         model.load_state_dict(checkpoint)
+        weight = model.cell.energy_transform.weight.cpu().detach().numpy()
         model = model.to(device)
         model.eval()
         y_val_pred, energies_val, _ = model(X_val)
 
-        # # For debugging        
-        # mask_val_ = mask_val.cpu().detach().numpy()
-        # energies_val_ = energies_val.cpu().detach().numpy()
-        # mask_val_ = mask_val_.astype(int).astype(bool)[0, :]
-        # energies_val_ = energies_val_[0, mask_val_, 0]
-        # y_val_pred_ = y_val_pred.cpu().detach().numpy()
-        # y_val_pred_ = y_val_pred_[0, mask_val_, 0]
-        # X_val_ = X_val.cpu().detach().numpy()
-        # X_val_ = X_val_[0, mask_val_, 0]
-        # energies_ref = cumtrapz(y_val_pred_, X_val_, initial=0)
-
-        # plt.plot(energies_val_)
-        # plt.plot(energies_ref)
-        # plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_energy_temp.png')))
-        # plt.close()
-        # #
-
         loss = Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
         losses.append(loss.item())
+        epochs.append(epoch)
+        weights.append(weight)
         print('Validation Loss: {}'.format(loss.item()))
     
+    pd.DataFrame({'Epoch': epochs, 'Loss': losses, 'Weight': weights}).to_csv(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv')), index=False)
+
     best_model_idx = np.argmin(losses)
     checkpoint = torch.load(model_paths[best_model_idx])
     model = Training.CustomLSTM(2, nn_size, 1)
