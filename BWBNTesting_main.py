@@ -19,8 +19,8 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
+generate_EQ = True
+preprocess = True
 train = True
 analyze_result = True
 
