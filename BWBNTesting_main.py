@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = True
-preprocess = True
+generate_EQ = False
+preprocess = False
 train = True
 analyze_result = True
 
-Title = 'BWBN_energy_h_only_normalization'
+Title = 'BWBN_energy_h_energy'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -88,7 +88,7 @@ del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
-nn_size = 128
+nn_size = 64
 alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'

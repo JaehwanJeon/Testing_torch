@@ -28,25 +28,31 @@ def result_plot(X_val,
     epochs = []
     losses = []
     weights = []
-    for model_path in model_paths:
-        match = re.search('_checkpoint_(\d+).pth', model_path)
-        if match:
-            epoch =  int(match.group(1))
-        checkpoint = torch.load(model_path)
-        model = Training.CustomLSTM(2, nn_size, 1)
-        model.load_state_dict(checkpoint)
-        weight = model.cell.energy_transform.weight.cpu().detach().numpy()
-        model = model.to(device)
-        model.eval()
-        y_val_pred, energies_val, _ = model(X_val)
-
-        loss = Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
-        losses.append(loss.item())
-        epochs.append(epoch)
-        weights.append(weight)
-        print('Validation Loss: {}'.format(loss.item()))
+    loss_data_file = os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv'))
     
-    pd.DataFrame({'Epoch': epochs, 'Loss': losses, 'Weight': weights}).to_csv(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv')), index=False)
+    if not os.path.exists(loss_data_file):
+
+        for model_path in model_paths:
+            match = re.search('_checkpoint_(\d+).pth', model_path)
+            if match:
+                epoch =  int(match.group(1))
+            checkpoint = torch.load(model_path)
+            model = Training.CustomLSTM(2, nn_size, 1)
+            model.load_state_dict(checkpoint)
+            weight = model.cell.energy_transform.weight.cpu().detach().numpy()
+            model = model.to(device)
+            model.eval()
+            y_val_pred, energies_val, _ = model(X_val)
+
+            loss = Training.custom_loss(y_val_pred[:, :, 0], y_val, mask_val)
+            losses.append(loss.item())
+            epochs.append(epoch)
+            weights.append(weight)
+            print('Validation Loss: {}'.format(loss.item()))
+        
+        pd.DataFrame({'Epoch': epochs, 'Loss': losses, 'Weight': weights}).to_csv(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv')), index=False)
+
+    losses = pd.read_csv(loss_data_file)['Loss'].values
 
     best_model_idx = np.argmin(losses)
     checkpoint = torch.load(model_paths[best_model_idx])
