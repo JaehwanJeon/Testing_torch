@@ -19,9 +19,9 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = True
-preprocess = True
-train = True
+generate_EQ = False
+preprocess = False
+train = False
 analyze_result = True
 
 Title = 'BWBN_h_energy_novel'
