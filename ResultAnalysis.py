@@ -37,7 +37,7 @@ def result_plot(X_val,
             if match:
                 epoch =  int(match.group(1))
             checkpoint = torch.load(model_path)
-            model = Training.CustomLSTM(1, nn_size, 1)
+            model = Training.CustomLSTM(2, nn_size, 1)
             model.load_state_dict(checkpoint)
             weight = model.cell.energy_transform.weight.cpu().detach().numpy()
             model = model.to(device)
@@ -56,7 +56,7 @@ def result_plot(X_val,
 
     best_model_idx = np.argmin(losses)
     checkpoint = torch.load(model_paths[best_model_idx])
-    model = Training.CustomLSTM(1, nn_size, 1)
+    model = Training.CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
