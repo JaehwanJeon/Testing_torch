@@ -180,3 +180,68 @@ def dynamic_1DOF(mat_type, mat_props, t, gm, gm_scale=1, beta_k_set=None):
     return outputs, beta_kk
     
 
+def static_1DOF(mat_type, mat_props, disp):
+    op.wipe()
+
+    ndm = 2
+    ndf = 3
+    op.model('basic', '-ndm', ndm, '-ndf', ndf)
+
+    bot_node = 1
+    top_node = 2
+    op.node(bot_node, 0., 0.)
+    op.node(top_node, 0., 0.)
+
+    op.fix(bot_node, *[1, 1, 1])
+    op.fix(top_node, *[0, 1, 1])
+
+    op.equalDOF(bot_node, top_node, *[2, 3])
+
+    op.mass(top_node, 1.0, 0., 0.)
+
+    mat_tag = 1
+
+    op.uniaxialMaterial(mat_type, 1, *mat_props)
+
+    beam_tag = 1
+    op.element('zeroLength', beam_tag, bot_node, top_node, '-mat', mat_tag,
+              '-dir', 1, '-doRayleigh', 1)
+
+    pattern_tag = 1
+    ts_tag = 1
+
+    op.timeSeries('Constant',1)
+    op.pattern('Plain', pattern_tag , ts_tag)
+    op.load(top_node, 10., 0., 0.)
+    disp_diff = np.diff(disp, prepend=0)
+    disp_diff = disp_diff.tolist()
+    disp = disp.tolist()
+
+
+    op.wipeAnalysis()
+    op.algorithm('Newton')
+    op.system('SparseGeneral')
+    op.numberer('RCM')
+    op.constraints('Transformation')
+    op.analysis('Static')
+
+    tol = 1.0e-10
+    iterations = 10
+    op.test('EnergyIncr', tol, iterations, 0, 2)
+    outputs = {
+        'disp' : [],
+        'force' : [],
+    }
+
+    for i in range(len(disp_diff)):
+        op.integrator('DisplacementControl', top_node, 1, disp_diff[i])
+        op.analyze(1)
+        outputs['disp'].append(op.nodeDisp(top_node, 1))
+        op.reactions()
+        outputs['force'].append(-op.eleForce(beam_tag, 1))
+        op.integrator('DisplacementControl', top_node, 1, -disp_diff[i])
+
+    op.wipe()
+    for item in outputs:
+        outputs[item] = np.array(outputs[item])
+    return outputs
