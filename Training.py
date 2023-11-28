@@ -158,7 +158,7 @@ def train(X_train,
           checkpoint_epoch,
           existing_checkpoint=False):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:1')
+    device = torch.device('cuda:0')
     
     model = CustomLSTM(2, nn_size, 1)
     if existing_checkpoint != False:

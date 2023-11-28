@@ -143,6 +143,59 @@ def generate_impact_response(impact_length_list,
 
     print('Hysteresis data saved to {}'.format(hysteresis_data_dir_impact))
 
+
+def generate_linear_protocol(hysteresis_data_dir_linear_protocol,
+                                draw_hysteresis,
+                                mat_type,
+                                mat_props,
+                                title,
+                                slopes,
+                                intercepts,
+                                periods,
+                                repetitions):
+    
+        
+        os.makedirs(hysteresis_data_dir_linear_protocol, exist_ok=True)
+        i = 0
+        for period, repetition in zip(periods, repetitions):
+            for slope, intercept in zip(slopes, intercepts):
+                disp = linear_protocol(slope, intercept, period, repetition)
+                outputs = Experiment.static_1DOF(mat_type, mat_props, disp)
+
+                #### Calculate energy ####
+                disp = outputs['disp']
+                force = outputs['force']
+                ds = np.diff(disp, prepend=0)
+                force_ = 1 / 2 * (np.concatenate(([0], force)) + np.concatenate((force, [0])))[:-1]
+                energy = np.cumsum(force_ * ds)
+
+                np.savez(os.path.normpath(os.path.join(hysteresis_data_dir_linear_protocol, title + '_{}.npz'.format(i))), disp=outputs['disp'],
+                            force=outputs['force'], energy=energy)
+                
+                if draw_hysteresis:
+                    fig, ax = plt.subplots(figsize=(8,8))
+                    ax.plot(outputs['disp'], outputs['force'])
+                    ax.set_xlabel('Displacement (m)')
+                    ax.tick_params(axis='both', which='major', labelsize=15)
+                    ax.grid()
+                    ax.set_title('{}_{}'.format(period, slope))
+                    fig.savefig(os.path.normpath(os.path.join(hysteresis_data_dir_linear_protocol, './' + title + '_{}.png'.format(i))))
+                    plt.close(fig)
+
+                i += 1
+    
+        print('Hysteresis data saved to {}'.format(hysteresis_data_dir_linear_protocol))
+
+
+def linear_protocol(a, b, period, repetitions):
+    if period % 2 != 0:
+        raise ValueError('period must be even')
+    peaks = a * period / 2 * np.arange(repetitions * 2 + 1) + b
+    peaks = [peak * (-1)**i for i, peak in enumerate(peaks)]
+    values = [np.linspace(peaks[i], peaks[i+1], period//2, endpoint=False) for i in range(len(peaks)-1)]
+    return np.concatenate(values)
+
+
 def validate_data(EQ_list, 
                   hysteresis_data_dir, 
                   title,

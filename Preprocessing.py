@@ -7,7 +7,8 @@ def preprocess(n_samples,
                processed_data_dir,
                title,
                val_size=False,
-               normalize_gap=False):
+               normalize_gap=False,
+               test=True):
     # Total energy as input
     X = []
     y = []
@@ -37,15 +38,74 @@ def preprocess(n_samples,
         X[:, :, :2] = X[:, :, :2] / (X_max * (1 + normalize_gap))
         y = y / (y_max * (1 + normalize_gap))
 
-
-    X_train, X_test, y_train, y_test = X[:int(n_samples*0.5)], X[int(n_samples*0.5):], y[:int(n_samples*0.5)], y[int(n_samples*0.5):]
+    if test:
+        X_train, X_test, y_train, y_test = X[:int(n_samples*0.5)], X[int(n_samples*0.5):], y[:int(n_samples*0.5)], y[int(n_samples*0.5):]
 
     if val_size != False:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_size, random_state=0)
 
-    np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
-             y_train=y_train, y_test=y_test, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
-    
+    if test:
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
+                y_train=y_train, y_test=y_test, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
+    else:
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_val=X_val, 
+                y_train=y_train, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
+
+def preprocess_loading_protocol(n_samples,
+                                hysteresis_data_dir,
+                                processed_data_dir,
+                                title,
+                                val_size=False,
+                                normalize_gap=False,
+                                X_max=False,
+                                y_max=False,
+                                test=True):
+    # Total energy as input
+    X = []
+    y = []
+
+    time_length = []
+    num_inputs = 2 + 1
+    for i in range(n_samples):
+        outputs = np.load(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_{}.npz'.format(i))))
+        disp = outputs['disp']
+        vel = outputs['disp'] # Dummy
+        force = outputs['force']
+        energy = outputs['energy']
+        X.append(np.concatenate((disp[:, np.newaxis], vel[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
+        y.append(force)
+        time_length.append(len(disp))
+    time_length = np.array(time_length)
+    max_time_length = np.max(time_length)
+    for i in range(n_samples):
+        if len(X[i]) < max_time_length:
+            X[i] = np.concatenate((X[i], np.zeros((max_time_length - len(X[i]), num_inputs))), axis=0)
+            y[i] = np.concatenate((y[i], np.zeros((max_time_length - len(y[i])))), axis=0)
+    X, y = np.array(X), np.array(y)
+
+    if normalize_gap != False:
+        if (X_max == False).all() or y_max == False:
+            X_max = np.max(np.abs(X), axis=(0,1))[:2]
+            y_max = np.max(np.abs(y))
+        X[:, :, :2] = X[:, :, :2] / (X_max * (1 + normalize_gap))
+        y = y / (y_max * (1 + normalize_gap))
+
+    if test:
+        X_train, X_test, y_train, y_test = X[:int(n_samples*0.5)], X[int(n_samples*0.5):], y[:int(n_samples*0.5)], y[int(n_samples*0.5):]
+    else:
+        X_train, y_train = X, y
+
+    if val_size != False:
+        X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_size, random_state=0)
+
+    if test:
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + 'linear_protocol' + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
+                y_train=y_train, y_test=y_test, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
+    else:
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + 'linear_protocol' + '_Processed_data.npz')), X_train=X_train, X_val=X_val, 
+                y_train=y_train, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
+
+
 
 def preprocess_impact_loading(impact_length_list,
                              impact_magnitude_list,
