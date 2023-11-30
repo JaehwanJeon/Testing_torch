@@ -21,9 +21,9 @@ values = linear_protocol(a, b, period, repetitions)
 
 # 결과 플롯
 plt.plot(values)
-plt.xlabel('Time')
-plt.ylabel('Value')
-plt.title('Linear Oscillation between ax+b and -ax-b')
+plt.xlabel('Time step')
+plt.ylabel('Displacement')
+plt.title('Linear loading protocol')
 plt.grid(True)
 plt.show()
 

@@ -19,9 +19,9 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
 Title = 'BWBN_h_energy_diff_disp'
@@ -55,18 +55,18 @@ change_at2_to_numpy = False
 impact_length_list = [500, 1000]
 impact_magnitude_list = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5]
 if generate_EQ:
-    # EQ_generation.generate_hysteresis(EQ_data_dir,
-    #                                               hysteresis_data_dir,
-    #                                               target_data,
-    #                                               change_at2_to_numpy,
-    #                                               seed,
-    #                                               gm_scale_factor,
-    #                                               n_samples,
-    #                                               draw_hysteresis,
-    #                                               mat_type,
-    #                                               mat_props,
-    #                                               Title,
-    #                                               EQ_list)
+    EQ_generation.generate_hysteresis(EQ_data_dir,
+                                                  hysteresis_data_dir,
+                                                  target_data,
+                                                  change_at2_to_numpy,
+                                                  seed,
+                                                  gm_scale_factor,
+                                                  n_samples,
+                                                  draw_hysteresis,
+                                                  mat_type,
+                                                  mat_props,
+                                                  Title,
+                                                  EQ_list)
     EQ_generation.generate_impact_response(impact_length_list,
                                             impact_magnitude_list,
                                             hysteresis_data_dir,
@@ -80,12 +80,12 @@ val_size = 0.2
 
 normalize_gap = 0.1
 if preprocess:
-    # Preprocessing.preprocess(n_samples,
-    #                                     hysteresis_data_dir,
-    #                                     processed_data_dir,
-    #                                     title=Title,
-    #                                     val_size=val_size,
-    #                                     normalize_gap=normalize_gap)
+    Preprocessing.preprocess(n_samples,
+                                        hysteresis_data_dir,
+                                        processed_data_dir,
+                                        title=Title,
+                                        val_size=val_size,
+                                        normalize_gap=normalize_gap)
     Preprocessing.preprocess_impact_loading(impact_length_list,
                                             impact_magnitude_list,
                                             hysteresis_data_dir,
@@ -148,16 +148,16 @@ del Data_impact
 X_test_impact, mask_test_impact = X_test_impact[:, :, :2], X_test_impact[:, :, 2]
 
 if analyze_result:
-    # ResultAnalysis.result_plot(X_val,
-    #             y_val,
-    #             mask_val,
-    #             X_test,
-    #             y_test,
-    #             mask_test,
-    #             nn_size,
-    #             model_paths,
-    #             Title,
-    #             result_plot_dir)
+    ResultAnalysis.result_plot(X_val,
+                y_val,
+                mask_val,
+                X_test,
+                y_test,
+                mask_test,
+                nn_size,
+                model_paths,
+                Title,
+                result_plot_dir)
     
     ResultAnalysis.test_impact(X_test_impact,
                                y_test_impact,
