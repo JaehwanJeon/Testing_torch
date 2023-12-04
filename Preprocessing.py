@@ -59,7 +59,8 @@ def preprocess_loading_protocol(n_samples,
                                 normalize_gap=False,
                                 X_max=False,
                                 y_max=False,
-                                test=True):
+                                test=True,
+                                data_augmentation_rates=False):
     # Total energy as input
     X = []
     y = []
@@ -98,11 +99,24 @@ def preprocess_loading_protocol(n_samples,
     if val_size != False:
         X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=val_size, random_state=0)
 
+    if data_augmentation_rates != False:
+        augmented_data = []
+        for data_augmentation_rate in data_augmentation_rates:
+            X_train_i = X_train[:, ::data_augmentation_rate, :]
+            X_train_i = np.concatenate((X_train_i, np.zeros((len(X_train_i), max_time_length - X_train_i.shape[1], num_inputs))), axis=1)
+            y_train_i = y_train[:, ::data_augmentation_rate]
+            y_train_i = np.concatenate((y_train_i, np.zeros((len(y_train_i), max_time_length - y_train_i.shape[1]))), axis=1)
+            augmented_data.append((X_train_i, y_train_i))
+        
+        for i in range(len(data_augmentation_rates)):
+            X_train = np.concatenate((X_train, augmented_data[i][0]), axis=0)
+            y_train = np.concatenate((y_train, augmented_data[i][1]), axis=0)
+
     if test:
-        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + 'linear_protocol' + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_test=X_test, X_val=X_val, 
                 y_train=y_train, y_test=y_test, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
     else:
-        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + 'linear_protocol' + '_Processed_data.npz')), X_train=X_train, X_val=X_val, 
+        np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')), X_train=X_train, X_val=X_val, 
                 y_train=y_train, y_val=y_val, normalize_gap=normalize_gap, X_max=X_max, y_max=y_max)
 
 

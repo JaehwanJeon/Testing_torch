@@ -17,7 +17,7 @@ def test_impact(X_test,
                 nn_size,
                 result_plot_dir):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
+    device = torch.device('cuda:1')
 
     loss_data_file = os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv'))
     losses = pd.read_csv(loss_data_file)['Loss'].values
@@ -76,7 +76,7 @@ def result_plot(X_val,
 
     os.makedirs(result_plot_dir, exist_ok=True)
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
+    device = torch.device('cuda:1')
     X_val, X_test = torch.from_numpy(X_val).float().to(device), torch.from_numpy(X_test).float().to(device)
     y_val, y_test = torch.from_numpy(y_val).float().to(device), torch.from_numpy(y_test).float().to(device)
     mask_val, mask_test = torch.from_numpy(mask_val).float().to(device), torch.from_numpy(mask_test).float().to(device)

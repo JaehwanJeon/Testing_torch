@@ -20,11 +20,12 @@ import Training
 import ResultAnalysis
 
 generate_EQ = False
-preprocess = False
-train = False
+preprocess = True
+train = True
 analyze_result = True
 
 Title = 'BWBN_h_energy_diff_disp'
+LPTitle = 'BWBN_h_energy_diff_disp_linear_protocol_aug'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -62,7 +63,7 @@ if generate_EQ:
                                            draw_hysteresis,
                                            mat_type,
                                            mat_props,
-                                           Title,
+                                           LPTitle,
                                            slopes,
                                            intercepts,
                                            periods,
@@ -72,21 +73,24 @@ if generate_EQ:
 val_size = 0.2
 
 normalize_gap = 0.1
+data_augmentation_rates = [2, 5, 10]
+
 if preprocess:
     Preprocessing.preprocess_loading_protocol(n_samples,
                                         hysteresis_data_dir_linear_protocol,
                                         processed_data_dir,
-                                        title=Title,
+                                        title=LPTitle,
                                         val_size=val_size,
                                         normalize_gap=normalize_gap,
                                         X_max=X_max,
                                         y_max=y_max,
-                                        test=False)
+                                        test=False,
+                                        data_augmentation_rates=data_augmentation_rates)
 
 
 
 # Training
-Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 'linear_protocol' + '_Processed_data.npz')))
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + LPTitle + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
 X_train[:, :, 1], X_val[:, :, 1] = np.diff(X_train[:, :, 0], axis=1, prepend=0), np.diff(X_val[:, :, 0], axis=1, prepend=0)
@@ -117,7 +121,7 @@ if train:
                                 alpha,
                                 window_size,
                                 checkpoint_dir=model_dir,
-                                title=Title + '_linear_protocol',
+                                title=LPTitle,
                                 checkpoint_epoch=checkpoint_epoch,
                                 existing_checkpoint=checkpoint)
 
@@ -126,8 +130,8 @@ X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Dat
 del Data
 X_val[:, :, 1] = np.diff(X_val[:, :, 0], axis=1, prepend=0)
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
-# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_linear_protocol' + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
-model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_linear_protocol' + '_checkpoint_925.pth'))]
+model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_linear_protocol' + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
+# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_linear_protocol' + '_checkpoint_925.pth'))]
 result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 
@@ -140,7 +144,7 @@ if analyze_result:
                 mask_test,
                 nn_size,
                 model_paths,
-                Title + '_linear_protocol',
+                LPTitle,
                 result_plot_dir)
     
 

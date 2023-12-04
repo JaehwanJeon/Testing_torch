@@ -19,9 +19,9 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = True
-preprocess = True
-train = True
+generate_EQ = False
+preprocess = False
+train = False
 analyze_result = True
 
 Title = 'BWBN_h_energy_diff_disp'
@@ -130,8 +130,8 @@ if train:
                                 checkpoint_epoch=checkpoint_epoch,
                                 existing_checkpoint=checkpoint)
 
-Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
-X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 'linear_protocol' + '_Processed_data.npz')))
+X_val, X_test, y_val, y_test = Data['X_val'], Data['X_val'], Data['y_val'], Data['y_val']
 del Data
 X_val[:, :, 1] = np.diff(X_val[:, :, 0], axis=1, prepend=0)
 X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
