@@ -156,9 +156,10 @@ def train(X_train,
           checkpoint_dir,
           title,
           checkpoint_epoch,
-          existing_checkpoint=False):
+          existing_checkpoint=False,
+          augmentation_rate=False):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:1')
+    device = torch.device('cuda:0')
     
     model = CustomLSTM(2, nn_size, 1)
     if existing_checkpoint != False:
@@ -166,7 +167,8 @@ def train(X_train,
     model = model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    X_train, y_train, mask_train = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
+    X_train_, y_train_, mask_train_ = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
+    X_train, y_train, mask_train = X_train_, y_train_, mask_train_
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
 
     val_loss = []
@@ -180,6 +182,10 @@ def train(X_train,
     model.train()
     epoch_losses = []
     for epoch in range(num_epochs):
+        if augmentation_rate != False:
+            augmented_idx = np.random.choice(X_train.shape[1], int(X_train.shape[1] * augmentation_rate), replace=False)
+            augmented_idx = np.sort(augmented_idx)
+            X_train, y_train, mask_train = X_train_[:, augmented_idx], y_train_[:, augmented_idx], mask_train_[:, augmented_idx]
         states = None
         losses = []
         print('Epoch:', epoch+1)

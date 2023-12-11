@@ -21,10 +21,10 @@ import ResultAnalysis
 
 generate_EQ = False
 preprocess = False
-train = False
+train = True
 analyze_result = True
 
-Title = 'BWBN_h_energy_diff_disp'
+Title = 'BWBN_h_energy_diff_disp_aug'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -67,13 +67,13 @@ if generate_EQ:
                                                   mat_props,
                                                   Title,
                                                   EQ_list)
-    EQ_generation.generate_impact_response(impact_length_list,
-                                            impact_magnitude_list,
-                                            hysteresis_data_dir,
-                                            draw_hysteresis,
-                                            mat_type,
-                                            mat_props,
-                                            Title)
+    # EQ_generation.generate_impact_response(impact_length_list,
+    #                                         impact_magnitude_list,
+    #                                         hysteresis_data_dir,
+    #                                         draw_hysteresis,
+    #                                         mat_type,
+    #                                         mat_props,
+    #                                         Title)
 
 processed_data_dir = hysteresis_data_dir
 val_size = 0.2
@@ -86,11 +86,11 @@ if preprocess:
                                         title=Title,
                                         val_size=val_size,
                                         normalize_gap=normalize_gap)
-    Preprocessing.preprocess_impact_loading(impact_length_list,
-                                            impact_magnitude_list,
-                                            hysteresis_data_dir,
-                                            processed_data_dir,
-                                            Title)
+    # Preprocessing.preprocess_impact_loading(impact_length_list,
+    #                                         impact_magnitude_list,
+    #                                         hysteresis_data_dir,
+    #                                         processed_data_dir,
+    #                                         Title)
 
 
 
@@ -111,6 +111,8 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
+augmentation_rate = 0.8
+
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
@@ -128,7 +130,8 @@ if train:
                                 checkpoint_dir=model_dir,
                                 title=Title,
                                 checkpoint_epoch=checkpoint_epoch,
-                                existing_checkpoint=checkpoint)
+                                existing_checkpoint=checkpoint,
+                                augmentation_rate=augmentation_rate)
 
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 'linear_protocol' + '_Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_val'], Data['y_val'], Data['y_val']
@@ -155,18 +158,19 @@ if analyze_result:
                 y_test,
                 mask_test,
                 nn_size,
+                model_dir,
                 model_paths,
                 Title,
                 result_plot_dir)
     
-    ResultAnalysis.test_impact(X_test_impact,
-                               y_test_impact,
-                                mask_test_impact,
-                                impact_length_list,
-                                impact_magnitude_list,
-                                model_paths,
-                                Title,
-                                nn_size,
-                                result_plot_dir)
+    # ResultAnalysis.test_impact(X_test_impact,
+    #                            y_test_impact,
+    #                             mask_test_impact,
+    #                             impact_length_list,
+    #                             impact_magnitude_list,
+    #                             model_paths,
+    #                             Title,
+    #                             nn_size,
+    #                             result_plot_dir)
     
 
