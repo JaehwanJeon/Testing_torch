@@ -183,7 +183,7 @@ def train(X_train,
     epoch_losses = []
     for epoch in range(num_epochs):
         if augmentation_rate != False:
-            augmented_idx = np.random.choice(X_train.shape[1], int(X_train.shape[1] * augmentation_rate), replace=False)
+            augmented_idx = np.random.choice(X_train_.shape[1], int(X_train_.shape[1] * augmentation_rate), replace=False)
             augmented_idx = np.sort(augmented_idx)
             X_train, y_train, mask_train = X_train_[:, augmented_idx], y_train_[:, augmented_idx], mask_train_[:, augmented_idx]
         states = None
