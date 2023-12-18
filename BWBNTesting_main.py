@@ -21,7 +21,7 @@ import ResultAnalysis
 
 generate_EQ = False
 preprocess = False
-train = True
+train = False
 analyze_result = True
 
 Title = 'BWBN_h_energy_diff_disp_aug'
@@ -133,7 +133,7 @@ if train:
                                 existing_checkpoint=checkpoint,
                                 augmentation_rate=augmentation_rate)
 
-Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 'linear_protocol' + '_Processed_data.npz')))
+Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_val'], Data['y_val'], Data['y_val']
 del Data
 X_val[:, :, 1] = np.diff(X_val[:, :, 0], axis=1, prepend=0)
@@ -143,12 +143,12 @@ model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpo
 result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 os.makedirs(result_plot_dir, exist_ok=True)
 
-processed_data_dir_impact = os.path.normpath(os.path.join(processed_data_dir, './Impact'))
-Data_impact = np.load(os.path.normpath(os.path.join(processed_data_dir_impact, './' + Title + '_Processed_data_impact.npz')))
-X_test_impact, y_test_impact = Data_impact['X_test'], Data_impact['y_test']
-X_test_impact[:, :, 1] = np.diff(X_test_impact[:, :, 0], axis=1, prepend=0)
-del Data_impact
-X_test_impact, mask_test_impact = X_test_impact[:, :, :2], X_test_impact[:, :, 2]
+# processed_data_dir_impact = os.path.normpath(os.path.join(processed_data_dir, './Impact'))
+# Data_impact = np.load(os.path.normpath(os.path.join(processed_data_dir_impact, './' + Title + '_Processed_data_impact.npz')))
+# X_test_impact, y_test_impact = Data_impact['X_test'], Data_impact['y_test']
+# X_test_impact[:, :, 1] = np.diff(X_test_impact[:, :, 0], axis=1, prepend=0)
+# del Data_impact
+# X_test_impact, mask_test_impact = X_test_impact[:, :, :2], X_test_impact[:, :, 2]
 
 if analyze_result:
     ResultAnalysis.result_plot(X_val,
