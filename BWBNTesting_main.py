@@ -24,7 +24,7 @@ preprocess = False
 train = False
 analyze_result = True
 
-Title = 'BWBN_h_energy_diff_disp_aug'
+Title = 'BWBN_h_energy_diff_disp'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -111,7 +111,7 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
-augmentation_rate = 0.8
+augmentation_rate = 1.0
 
 if pretrained != False:
     checkpoint = torch.load(pretrained)
