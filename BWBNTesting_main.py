@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
-Title = 'BWBN_h_energy_diff_disp'
+Title = 'BWBN_h_energy_diff_disp_10'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -46,7 +46,7 @@ target_data = os.path.join(EQ_data_dir, './elcentro_NS.txt')
 target_data = os.path.normpath(target_data)
 seed = 0
 gm_scale_factor = 3
-n_samples = 80
+n_samples = 10
 draw_hysteresis = True
 mat_type = 'BWBN'
 k0 = 6.283**2
