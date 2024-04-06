@@ -18,7 +18,7 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-preprocess = False
+preprocess = True
 train = True
 analyze_result = True
 

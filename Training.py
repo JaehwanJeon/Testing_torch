@@ -10,6 +10,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 from sklearn.model_selection import train_test_split
+import pandas as pd
+from backend import add_diff
 
         
 class CustomLSTMCell(nn.Module):
@@ -96,52 +98,46 @@ class CustomLSTM(nn.Module):
         return torch.stack(outputs, dim=1), torch.stack(energies, dim=1), (h, c, prev_output, h_energy, energy, previous_x)
 
     
-
-def custom_loss(y_pred, y, mask):
-    loss = torch.mean((y_pred - y)**2 * mask)
-    return loss
-
-def drucker_loss(f, e, mask):
-    
-    num_samples, time_length = f.size()
-    num_chops = 201
-    chop_vector = torch.linspace(-1, 1, num_chops).to(f.device)
-
-    # Expand the mask and tensors along the second axis
-    mask_expanded = mask.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
-    f_expanded = f.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
-    e_expanded = e.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
-
-    chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(-1).expand(num_samples, -1, time_length)
-    deducted_f_expanded = f_expanded - chop_vector_expanded
-
-    # Create deducted_f_sign tensor with size [num_samples, num_chops, time_length]
-    deducted_f_sign = (deducted_f_expanded > 0).int()
-
-    diff_sign = torch.diff(deducted_f_sign, dim=2, prepend=deducted_f_sign[:, :, 0].unsqueeze(2))
-    change_bool = ((diff_sign != 0) * mask_expanded).bool()
-    change_idx = torch.nonzero(change_bool)
-    selected_e = e_expanded[change_idx[:, 0], change_idx[:, 1], change_idx[:, 2]]
-    diff_e = selected_e[1:] - selected_e[:-1]
-    diff_idx = change_idx[1:] - change_idx[:-1]
-    diff_e = diff_e * (diff_idx[:, 0] == 0) * (diff_idx[:, 1] == 0)
-    diff_e_neg = diff_e[diff_e < 0]
-    return -torch.sum(diff_e_neg) / (num_samples * time_length)
-    
-
-
 class Loss:
     def __init__(self, y_pred, y, energies, mask, device):
-        self.mse_loss = (torch.mean((y_pred - y)**2 * mask)).to(device).detach()
-        self.phys_loss = (drucker_loss(y_pred, energies, mask)).to(device).detach()
-        print('MSE Loss / Phys Loss will be normalized by {}/{}'.format(self.mse_loss, self.phys_loss))
+        self.mse_loss_init = (torch.mean((y_pred - y)**2 * mask)).to(device).detach()
+        self.phys_loss_init = (self.drucker_loss(y_pred, energies, mask)).to(device).detach()
+        print('MSE Loss / Phys Loss will be normalized by {}/{}'.format(self.mse_loss_init, self.phys_loss_init))
         pass
 
     def combined_loss(self, y_pred, y, energies, mask, alpha=0.2):
-        mse_loss = torch.mean((y_pred - y)**2 * mask) / self.mse_loss
-        phys_loss = drucker_loss(y_pred, energies, mask) / self.phys_loss  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
-        print('MSE Loss / Phys Loss: {:.8f}/{:.8f}'.format(mse_loss, phys_loss), end='\r')
-        return (1-alpha) * mse_loss + alpha * phys_loss
+        self.mse_loss = torch.mean((y_pred - y)**2 * mask) / self.mse_loss_init
+        self.phys_loss = self.drucker_loss(y_pred, energies, mask) / self.phys_loss_init  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+        print('MSE Loss / Phys Loss: {:.8f}/{:.8f}'.format(self.mse_loss, self.phys_loss), end='\r')
+        return (1-alpha) * self.mse_loss + alpha * self.phys_loss
+    
+    def drucker_loss(f, e, mask):
+    
+        num_samples, time_length = f.size()
+        num_chops = 201
+        chop_vector = torch.linspace(-1, 1, num_chops).to(f.device)
+
+        # Expand the mask and tensors along the second axis
+        mask_expanded = mask.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+        f_expanded = f.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+        e_expanded = e.unsqueeze(1).expand(-1, chop_vector.size(0), -1)
+
+        chop_vector_expanded = chop_vector.unsqueeze(0).unsqueeze(-1).expand(num_samples, -1, time_length)
+        deducted_f_expanded = f_expanded - chop_vector_expanded
+
+        # Create deducted_f_sign tensor with size [num_samples, num_chops, time_length]
+        deducted_f_sign = (deducted_f_expanded > 0).int()
+
+        diff_sign = torch.diff(deducted_f_sign, dim=2, prepend=deducted_f_sign[:, :, 0].unsqueeze(2))
+        change_bool = ((diff_sign != 0) * mask_expanded).bool()
+        change_idx = torch.nonzero(change_bool)
+        selected_e = e_expanded[change_idx[:, 0], change_idx[:, 1], change_idx[:, 2]]
+        diff_e = selected_e[1:] - selected_e[:-1]
+        diff_idx = change_idx[1:] - change_idx[:-1]
+        diff_e = diff_e * (diff_idx[:, 0] == 0) * (diff_idx[:, 1] == 0)
+        diff_e_neg = diff_e[diff_e < 0]
+        return -torch.sum(diff_e_neg) / (num_samples * time_length)
+
 
 def train(X_train,
           y_train,
@@ -159,7 +155,7 @@ def train(X_train,
           existing_checkpoint=False,
           augmentation_rate=False):
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:1')
+    device = torch.device('cuda:0')
     
     model = CustomLSTM(2, nn_size, 1)
     if existing_checkpoint != False:
@@ -170,22 +166,27 @@ def train(X_train,
     X_train_, y_train_, mask_train_ = torch.from_numpy(X_train).float().to(device), torch.from_numpy(y_train).float().to(device), torch.from_numpy(mask_train).float().to(device)
     X_train, y_train, mask_train = X_train_, y_train_, mask_train_
     X_val, y_val, mask_val = torch.from_numpy(X_val).float().to(device), torch.from_numpy(y_val).float().to(device), torch.from_numpy(mask_val).float().to(device)
-
+    X_val = add_diff(X_val)
     val_loss = []
     # Obtaining initial normalization factor for data-driven loss vs physics-based loss
     states = None
     model.eval()
-    outputs, energies, states = model(X_train, states)
-    criterion = Loss(outputs[:, :, 0], y_train, energies[:, :, 0], mask_train, device).combined_loss
+    outputs, energies, states = outputs, energies, states = model(add_diff(X_train), states)
+    LossClass = Loss(outputs[:, :, 0], y_train, energies[:, :, 0], mask_train, device)
+    criterion = LossClass.combined_loss
 
     # Training loop
     model.train()
     epoch_losses = []
+    validation_df = pd.DataFrame(index=['Epoch', 'Loss', 'MSE', 'PhysLoss'])
     for epoch in range(num_epochs):
         if augmentation_rate != False:
             augmented_idx = np.random.choice(X_train_.shape[1], int(X_train_.shape[1] * augmentation_rate), replace=False)
             augmented_idx = np.sort(augmented_idx)
             X_train, y_train, mask_train = X_train_[:, augmented_idx], y_train_[:, augmented_idx], mask_train_[:, augmented_idx]
+            X_train = add_diff(X_train)
+        else:
+            X_train = add_diff(X_train_)
         states = None
         losses = []
         print('Epoch:', epoch+1)
@@ -195,12 +196,6 @@ def train(X_train,
             labels = y_train[:, step:step+window_size]
 
             outputs, energies,  states = model(inputs, states)
-
-            # # For debugging
-            # plt.plot(energies[0, :, 0].cpu().detach().numpy())
-            # plt.savefig(os.path.normpath(os.path.join(checkpoint_dir, './Temp/' + title + '_energy_training_temp.png')))
-            # plt.close()
-            # #
 
             loss = criterion(outputs[:, :, 0], labels, energies[:, :, 0], mask_train[:, step:step+window_size], alpha=alpha)
             losses.append(loss.item())
@@ -213,17 +208,18 @@ def train(X_train,
         avg_loss = sum(losses) / len(losses)
         epoch_losses.append(avg_loss)
         print('\n', f'Epoch {epoch + 1}/{num_epochs}, Loss: {avg_loss}')        
+
         # 일정 주기마다 손실 출력
         if (epoch + 1) % checkpoint_epoch == 0:
-
             outputs, energies,  _ = model(X_val)
-            loss = custom_loss(outputs[:, :, 0], y_val, mask_val)
+            loss = criterion(outputs[:, :, 0], y_val, energies[:, :, 0], mask_val, alpha=alpha)
+            validation_df[epoch] = [epoch+1, loss.item(), LossClass.mse_loss.item(), LossClass.phys_loss.item()]
+            validation_df.to_csv(os.path.normpath(os.path.join(checkpoint_dir, title + '_loss.csv')), index=False)
             val_loss.append(loss.item())
             print(f'Validation Loss: {loss.item()}')
             torch.save(model.state_dict(), os.path.normpath(os.path.join(checkpoint_dir, title + '_checkpoint_{}.pth'.format(epoch+1))))
         
     np.savez(os.path.normpath(os.path.join(checkpoint_dir, title + '_losses.npz')), train_loss=epoch_losses, val_loss=val_loss)
     return model
-
 
 

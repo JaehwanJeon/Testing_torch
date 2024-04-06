@@ -14,14 +14,13 @@ def preprocess(n_samples,
     y = []
 
     time_length = []
-    num_inputs = 2 + 1
+    num_inputs = 2  # Displacement and mask
     for i in range(n_samples):
         outputs = np.load(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_{}.npz'.format(i))))
         disp = outputs['disp']
-        vel = outputs['vel']
         force = outputs['force']
         energy = outputs['energy']
-        X.append(np.concatenate((disp[:, np.newaxis], vel[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
+        X.append(np.concatenate((disp[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
         y.append(force)
         time_length.append(len(disp))
     time_length = np.array(time_length)
@@ -30,12 +29,12 @@ def preprocess(n_samples,
         if len(X[i]) < max_time_length:
             X[i] = np.concatenate((X[i], np.zeros((max_time_length - len(X[i]), num_inputs))), axis=0)
             y[i] = np.concatenate((y[i], np.zeros((max_time_length - len(y[i])))), axis=0)
-    X, y = np.array(X), np.array(y)
+    X, y = np.array(X), np.array(y)    # X.shape = (n_samples, max_time_length, num_inputs), y.shape = (n_samples, max_time_length)
 
     if normalize_gap != False:
-        X_max = np.max(np.abs(X), axis=(0,1))[:2]
+        X_max = np.max(np.abs(X), axis=(0,1))[:num_inputs-1]
         y_max = np.max(np.abs(y))
-        X[:, :, :2] = X[:, :, :2] / (X_max * (1 + normalize_gap))
+        X[:, :, :num_inputs] = X[:, :, :num_inputs] / (X_max * (1 + normalize_gap))
         y = y / (y_max * (1 + normalize_gap))
 
     if test:
@@ -66,14 +65,13 @@ def preprocess_loading_protocol(n_samples,
     y = []
 
     time_length = []
-    num_inputs = 2 + 1
+    num_inputs = 2
     for i in range(n_samples):
         outputs = np.load(os.path.normpath(os.path.join(hysteresis_data_dir, './' + title + '_{}.npz'.format(i))))
         disp = outputs['disp']
-        vel = outputs['disp'] # Dummy
         force = outputs['force']
         energy = outputs['energy']
-        X.append(np.concatenate((disp[:, np.newaxis], vel[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
+        X.append(np.concatenate((disp[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
         y.append(force)
         time_length.append(len(disp))
     time_length = np.array(time_length)
@@ -83,6 +81,8 @@ def preprocess_loading_protocol(n_samples,
             X[i] = np.concatenate((X[i], np.zeros((max_time_length - len(X[i]), num_inputs))), axis=0)
             y[i] = np.concatenate((y[i], np.zeros((max_time_length - len(y[i])))), axis=0)
     X, y = np.array(X), np.array(y)
+
+    raise NotImplementedError("This part is not implemented yet.")
 
     if normalize_gap != False:
         if (X_max == False).all() or y_max == False:
@@ -126,6 +126,8 @@ def preprocess_impact_loading(impact_length_list,
                               hysteresis_data_dir,
                               processed_data_dir,
                               title):
+    
+    raise NotImplementedError("This part is not implemented yet.")
     processed_data_0 = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + title + '_Processed_data.npz')))
     processed_data_dir_impact = os.path.normpath(os.path.join(processed_data_dir, './Impact'))
 
