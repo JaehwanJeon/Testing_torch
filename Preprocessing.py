@@ -34,7 +34,7 @@ def preprocess(n_samples,
     if normalize_gap != False:
         X_max = np.max(np.abs(X), axis=(0,1))[:num_inputs-1]
         y_max = np.max(np.abs(y))
-        X[:, :, :num_inputs] = X[:, :, :num_inputs] / (X_max * (1 + normalize_gap))
+        X[:, :, :num_inputs - 1] = X[:, :, :num_inputs - 1] / (X_max * (1 + normalize_gap))
         y = y / (y_max * (1 + normalize_gap))
 
     if test:

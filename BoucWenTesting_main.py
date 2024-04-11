@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = True
-preprocess = True
-train = True
+generate_EQ = False
+preprocess = False
+train = False
 analyze_result = True
 
-Title = 'BoucWen_h_energy_diff_disp'
+Title = 'BoucWen_Paper'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -85,8 +85,7 @@ if preprocess:
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
-X_train[:, :, 1], X_val[:, :, 1] = np.diff(X_train[:, :, 0], axis=1, prepend=0), np.diff(X_val[:, :, 0], axis=1, prepend=0)
-X_train, mask_train, X_val, mask_val = X_train[:, :, :2], X_train[:, :, 2], X_val[:, :, :2], X_val[:, :, 2]
+X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_val[:, :, :1], X_val[:, :, 1]
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
@@ -100,6 +99,10 @@ pretrained = False
 checkpoint = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
+
+
+result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
+os.makedirs(result_plot_dir, exist_ok=True)
 
 if train:
     model = Training.train(X_train,
@@ -115,17 +118,15 @@ if train:
                                 checkpoint_dir=model_dir,
                                 title=Title,
                                 checkpoint_epoch=checkpoint_epoch,
-                                existing_checkpoint=checkpoint)
+                                existing_checkpoint=checkpoint,
+                                result_plot_dir=result_plot_dir)
 
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
-X_val[:, :, 1] = np.diff(X_val[:, :, 0], axis=1, prepend=0)
-X_val, mask_val, X_test, mask_test = X_val[:, :, :2], X_val[:, :, 2], X_test[:, :, :2], X_test[:, :, 2]
+X_val, mask_val, X_test, mask_test = X_val[:, :, :1], X_val[:, :, 1], X_test[:, :, :1], X_test[:, :, 1]
 model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
 # model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
-os.makedirs(result_plot_dir, exist_ok=True)
 
 if analyze_result:
     ResultAnalysis.result_plot(X_val,
@@ -135,6 +136,7 @@ if analyze_result:
                 y_test,
                 mask_test,
                 nn_size,
+                model_dir,
                 model_paths,
                 Title,
                 result_plot_dir)
