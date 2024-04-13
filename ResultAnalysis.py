@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import Training
 import re
 import pandas as pd
-from backend import add_diff
+from backend import add_diff, Loss
 
 def test_impact(X_test,
                 y_test,

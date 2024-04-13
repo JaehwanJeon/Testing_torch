@@ -22,8 +22,8 @@ preprocess = True
 train = True
 analyze_result = True
 
-Title = 'Link_filtered'
-file_names = ['Link_' + str(i) + '_filtered' for i in range(1, 5)]
+Title = 'Link_filtered_no_cyclic'
+file_names = ['Link_' + str(i) + '_filtered' for i in range(2, 5)]
 
 hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Hysteresis/Pedram'
 hysteresis_data_paths = [os.path.normpath(os.path.join(hysteresis_data_dir, './' + file_name + '.csv')) for file_name in file_names]
@@ -64,8 +64,8 @@ if preprocess:
         X[:, :, :num_inputs-1] = X[:, :, :num_inputs-1] / (X_max * (1 + normalize_gap))
         y = y / (y_max * (1 + normalize_gap))
 
-
-    X_train, X_val, y_train, y_val = X[:n_samples-1], X[n_samples-1:], y[:n_samples-1], y[n_samples-1:]  
+    training_idx, validation_idx= [0, 1], [2]
+    X_train, X_val, y_train, y_val = X[training_idx], X[validation_idx], y[training_idx], y[validation_idx]  
 
     np.savez(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')), 
              X_train=X_train, X_val=X_val, X_test=X_val,
@@ -76,12 +76,12 @@ Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + 
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :num_inputs-1], X_train[:, :, num_inputs-1], X_val[:, :, :num_inputs-1], X_val[:, :, num_inputs-1]
-nn_size = 128
+nn_size = 64
 alpha = 0.5
 num_epochs = 3000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
-window_size = 512
+window_size = 1024
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
