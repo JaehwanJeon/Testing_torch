@@ -97,7 +97,7 @@ def generate_impact_response(impact_length_list,
                              mat_type,
                              mat_props,
                              title):
-
+    raise NotImplementedError('This function is not implemented yet. Please use the following code snippet to generate impact response data')
     hysteresis_data_dir_impact = os.path.normpath(os.path.join(hysteresis_data_dir, './Impact'))
     os.makedirs(hysteresis_data_dir_impact, exist_ok=True)
 

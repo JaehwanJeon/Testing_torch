@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
+generate_EQ = True
 preprocess = True
 train = True
 analyze_result = True
 
-Title = 'IMK_energy_augment'
+Title = 'IMK_PE_PI_DA_2L'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -127,7 +127,7 @@ del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_val[:, :, :1], X_val[:, :, 1]
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
-nn_size = 128
+nn_size = 64
 alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
@@ -136,11 +136,14 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
+augmentation_rate = 0.8
+
 if pretrained != False:
     checkpoint = torch.load(pretrained)
-augmentation_rate = 0.8
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 
+
+result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
+os.makedirs(result_plot_dir, exist_ok=True)
 
 if train:
     model = Training.train(X_train,
@@ -166,8 +169,6 @@ del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :1], X_val[:, :, 1], X_test[:, :, :1], X_test[:, :, 1]
 model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
 # model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
-os.makedirs(result_plot_dir, exist_ok=True)
 
 if analyze_result:
     ResultAnalysis.result_plot(X_val,

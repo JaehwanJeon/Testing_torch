@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
-Title = 'BoucWen_Paper'
+Title = 'BoucWen_PE_PI_DA'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -97,6 +97,7 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
+augmentation_rate = 0.8
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
@@ -119,6 +120,7 @@ if train:
                                 title=Title,
                                 checkpoint_epoch=checkpoint_epoch,
                                 existing_checkpoint=checkpoint,
+                                augmentation_rate=augmentation_rate,
                                 result_plot_dir=result_plot_dir)
 
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
