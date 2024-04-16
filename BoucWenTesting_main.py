@@ -128,7 +128,6 @@ X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Dat
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :1], X_val[:, :, 1], X_test[:, :, :1], X_test[:, :, 1]
 model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
-# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
 
 if analyze_result:
     ResultAnalysis.result_plot(X_val,

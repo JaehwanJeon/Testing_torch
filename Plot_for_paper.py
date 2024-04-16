@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 import ReadRecord
+from backend import *
 
 
 #%%
@@ -75,4 +76,19 @@ fig.savefig(os.path.join(save_dir, '1989LomaPrieta_1994Northridge_1971SanFernand
 
 
 
-# %%
+# %% Plot test results
+
+# Load best model
+model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
+loss_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
+loss_data = pd.read_csv(os.path.normpath(os.path.join(loss_dir, Title + '_loss.csv')))
+losses = loss_data['Loss'].values
+
+best_model_idx = np.argmin(losses)
+best_model_epoch = loss_data['Epoch'].values[best_model_idx]
+checkpoint = torch.load(os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_{}.pth'.format(int(best_model_epoch)))))
+model = CustomLSTM(2, nn_size, 1)
+model.load_state_dict(checkpoint)
+model = model.to(device)
+model.eval()
+

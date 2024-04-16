@@ -5,93 +5,9 @@ import torch.nn as nn
 import numpy as np
 from sklearn.model_selection import train_test_split
 import pandas as pd
-from backend import add_diff, Loss
-
-        
-class CustomLSTMCell(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
-        super(CustomLSTMCell, self).__init__()
-        
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        
-        # Linear transformation for energy
-        self.energy_transform = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)
-        
-        # Input gate
-        self.fc_i = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)  # *2 for energy
-        # Forget gate
-        self.fc_f = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-        # Cell state
-        self.fc_c = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-        # Output gate
-        self.fc_o = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-
-        self.ln_h = nn.LayerNorm(self.hidden_dim)
-
-    def forward(self, x, h_energy, states):
-        h, c = states
-        h_normalized = self.ln_h(h)
-        # Transform the energy
-        transformed_energy = torch.tanh(self.energy_transform(h_energy))
-        
-        h_combined = torch.cat([x, transformed_energy, h_normalized], 1)  # concatenate along the feature dimension
-
-        i = torch.sigmoid((self.fc_i(h_combined)))
-        f = torch.sigmoid((self.fc_f(h_combined)))
-        g = torch.tanh((self.fc_c(h_combined)))
-        o = torch.sigmoid((self.fc_o(h_combined)))
-        
-        c_next = f * c + i * g
-        h_next = self.ln_h(o * torch.tanh(c_next) + h)    # Adding residual connection
-
-        return h_next, c_next
+from backend import *
 
 
-class CustomLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
-        super(CustomLSTM, self).__init__()
-
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        
-        self.cell = CustomLSTMCell(input_dim, hidden_dim)
-        self.fc = nn.Linear(hidden_dim + 1, output_dim, bias=False)
-        
-
-    def forward(self, x, states=None):
-        batch_size, seq_length, _ = x.size()
-
-        if states is None:
-            h = torch.zeros(batch_size, self.hidden_dim).to(x.device)
-            c = torch.zeros(batch_size, self.hidden_dim).to(x.device)
-            prev_output = torch.zeros(batch_size, 1).to(x.device)
-            h_energy = torch.zeros(batch_size, self.hidden_dim).to(x.device)
-            energy = torch.zeros(batch_size, 1).to(x.device)
-            previous_x = torch.zeros(batch_size, 1).to(x.device)  # Initialize previous_x with zeros
-        else:
-            h, c, prev_output, h_energy, energy, previous_x = states
-
-        outputs = []
-        energies = []
-        for t in range(seq_length):
-            prev_h = h
-            h, c = self.cell(x[:, t, :], h_energy, (h, c))
-            output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
-            
-            # Calculate and accumulate energy using the trapezoid rule
-            current_x = x[:, t, 0].unsqueeze(1)
-            delta_disp = current_x - previous_x
-            h_energy = h_energy + (h + prev_h) / 2 * delta_disp
-            energy = energy + (output + prev_output) / 2 * delta_disp
-            energies.append(energy)
-            prev_output = output
-            previous_x = current_x
-            outputs.append(output)
-
-        return torch.stack(outputs, dim=1), torch.stack(energies, dim=1), (h, c, prev_output, h_energy, energy, previous_x)
-
-    
 def train(X_train,
           y_train,
           mask_train,
@@ -115,7 +31,7 @@ def train(X_train,
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = torch.device('cuda:0')
     
-    model = CustomLSTM(2, nn_size, 1)
+    model = CustomLSTM(2, nn_size, nn_size, 1)
     if existing_checkpoint != False:
         model.load_state_dict(existing_checkpoint)
     model = model.to(device)
@@ -161,7 +77,7 @@ def train(X_train,
             loss.backward()
             optimizer.step()
 
-            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach(), states[5].detach())
+            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach(), states[5].detach(), states[6].detach(), states[7].detach(), states[8].detach())
             
         avg_loss = sum(losses) / len(losses)
         epoch_losses.append(avg_loss)
