@@ -5,6 +5,7 @@ import glob
 import random
 import Experiment_230508 as Experiment
 import matplotlib.pyplot as plt
+from backend import linear_protocol
 
 
 def generate_hysteresis(EQ_data_dir,
@@ -185,15 +186,6 @@ def generate_linear_protocol(hysteresis_data_dir_linear_protocol,
                 i += 1
     
         print('Hysteresis data saved to {}'.format(hysteresis_data_dir_linear_protocol))
-
-
-def linear_protocol(a, b, period, repetitions):
-    if period % 2 != 0:
-        raise ValueError('period must be even')
-    peaks = a * period / 2 * np.arange(repetitions * 2 + 1) + b
-    peaks = [peak * (-1)**i for i, peak in enumerate(peaks)]
-    values = [np.linspace(peaks[i], peaks[i+1], period//2, endpoint=False) for i in range(len(peaks)-1)]
-    return np.concatenate(values)
 
 
 def validate_data(EQ_list, 

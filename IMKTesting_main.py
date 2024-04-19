@@ -19,10 +19,10 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
+generate_EQ = True
 preprocess = False
-train = True
-analyze_result = True
+train = False
+analyze_result = False
 
 Title = 'IMK_PE_PI_DA_2L'
 
@@ -77,6 +77,7 @@ as_mem_n = -(McMy - 1) * My_N / (theta_p * 6 * E * Ix / H)
 SH_mod_p = as_mem_p / (1.0 + n * (1.0 - as_mem_p))
 SH_mod_n = as_mem_n / (1.0 + n * (1.0 - as_mem_n))
 
+Lmda = Lmda / 2.0
 L_S = Lmda
 L_C = Lmda
 L_A = Lmda

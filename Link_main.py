@@ -18,8 +18,8 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-preprocess = True
-train = True
+preprocess = False
+train = False
 analyze_result = True
 
 Title = 'Link_filtered_no_cyclic' # 실제로 한건 2 layer이다..
