@@ -31,7 +31,7 @@ def train(X_train,
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     device = torch.device('cuda:0')
     
-    model = CustomLSTM(2, nn_size, nn_size, 1)
+    model = CustomLSTM(2, nn_size, 1)
     if existing_checkpoint != False:
         model.load_state_dict(existing_checkpoint)
     model = model.to(device)
@@ -77,7 +77,7 @@ def train(X_train,
             loss.backward()
             optimizer.step()
 
-            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach(), states[5].detach(), states[6].detach(), states[7].detach(), states[8].detach())
+            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach(), states[5].detach())
             
         avg_loss = sum(losses) / len(losses)
         epoch_losses.append(avg_loss)

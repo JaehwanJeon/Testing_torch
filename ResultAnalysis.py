@@ -118,7 +118,7 @@ def result_plot(X_val,
     best_model_idx = np.argmin(losses)
     best_model_epoch = loss_data['Epoch'].values[best_model_idx]
     checkpoint = torch.load(os.path.normpath(os.path.join(model_dir, './' + title +'_checkpoint_{}.pth'.format(int(best_model_epoch)))))
-    model = CustomLSTM2(2, nn_size, nn_size, 1)
+    model = CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
