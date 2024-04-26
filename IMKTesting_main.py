@@ -20,11 +20,11 @@ import Training
 import ResultAnalysis
 
 generate_EQ = True
-preprocess = False
-train = False
-analyze_result = False
+preprocess = True
+train = True
+analyze_result = True
 
-Title = 'IMK_PE_PI_DA_2L'
+Title = 'IMK_PE_PI_DA'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'

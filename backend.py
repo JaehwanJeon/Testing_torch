@@ -4,6 +4,7 @@ import numpy as np
 import os
 import Experiment_230508 as Experiment
 import pandas as pd
+import ReadRecord
 
 
 def linear_protocol(a, b, period, repetitions):
@@ -324,3 +325,97 @@ def result_data(processed_data_dir,
 
     # Save test results
     np.savez(os.path.join(save_data_dir, Title + '_Cyclic.npz'), X_test=X_test, y_test=y_test, mask_test=mask_test, y_test_pred=y_test_pred)
+
+def read_EQ(EQ_data_file):
+    with open(EQ_data_file, 'r') as f:
+        EQ_list_ = [line.strip() for line in f]
+    print(EQ_list_[:3])
+
+    EQ_list = []
+    for i, EQ in enumerate(EQ_list_):
+        EQ_name = './'+EQ
+        EQ_list.append(os.path.normpath(os.path.join('/home/jaehwan/Python Project/DLCM/Data', EQ_name)).replace("\\", "/"))
+    print(EQ_list[:3])
+
+    gm_list, t_list = [], []
+    for EQ_name in EQ_list:
+        file_name, file_extension = os.path.splitext(EQ_name)
+        dt, nPts = ReadRecord.ReadRecord(EQ_name, file_name+'.dat')
+        file_name, file_extension = os.path.splitext(EQ_name)
+        gm = np.load(file_name+'.npy')
+        t = np.arange(0, nPts*dt, dt)
+        gm_list.append(gm)
+        t_list.append(t)
+    return gm_list, t_list
+        
+
+def test_prediction(loss_dir,
+                    Title,
+                    model_dir,
+                    processed_data_path,
+                    save_data_path,
+                    device):
+    loss_data = pd.read_csv(os.path.normpath(os.path.join(loss_dir, Title + '_loss.csv')))
+    losses = loss_data['Loss'].values
+
+    best_model_idx = np.argmin(losses)
+    best_model_epoch = loss_data['Epoch'].values[best_model_idx]
+    checkpoint = torch.load(os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_{}.pth'.format(int(best_model_epoch)))))
+
+    nn_size = checkpoint['cell.fc_f.bias'].size()[0]
+    model = CustomLSTM(2, nn_size, 1)
+    model.load_state_dict(checkpoint)
+    model = model.to(device)
+    model.eval()
+
+    # Load test data
+    Data = np.load(processed_data_path)
+    X_test, y_test = Data['X_test'], Data['y_test']
+    del Data
+    X_test, mask_test = X_test[:, :, :1], X_test[:, :, 1]
+    X_test =torch.from_numpy(X_test).float().to(device)
+    X_test = add_diff(X_test)
+    y_test = torch.from_numpy(y_test).float().to(device)
+    mask_test = torch.from_numpy(mask_test).float().to(device)
+
+    y_test_pred, energies_test, _ = model(X_test)
+    y_test_pred = y_test_pred.cpu().detach().numpy()
+    X_test = X_test.cpu().detach().numpy()
+    y_test = y_test.cpu().detach().numpy()
+    mask_test = mask_test.cpu().detach().numpy()
+
+    # Save test results
+    np.savez(save_data_path, X_test=X_test, y_test=y_test, mask_test=mask_test, y_test_pred=y_test_pred)
+
+
+def generate_cyclic(mat_type,
+                    mat_props,
+                    disps,
+                    processed_data_path,
+                    processed_cyclic_path):
+    Data = np.load(processed_data_path)
+    X_max, y_max, normalize_gap = Data['X_max'], Data['y_max'], Data['normalize_gap']
+    # Test for maximum displacement of 1.1 larger than it was in training
+    disps = [disp * X_max * (1.1) for disp in disps]
+
+    outputs = [Experiment.static_1DOF(mat_type, mat_props, disps[i]) for i in range(len(disps))]
+    X_tests, y_tests = [disp / (X_max * (1 + normalize_gap)) for disp in disps], [output['force'] / (y_max * (1 + normalize_gap)) for output in outputs]
+    n_samples = len(disps)
+
+    X_test, y_test, time_length = [], [], []
+
+    num_inputs = 2  # Displacement and mask
+    for i in range(n_samples):
+        disp, force = X_tests[i], y_tests[i]
+        X_test.append(np.concatenate((disp[:, np.newaxis], np.ones((len(disp), 1))), axis=1))
+        y_test.append(force)
+        time_length.append(len(disp))
+    time_length = np.array(time_length)
+    max_time_length = np.max(time_length)
+
+    for i in range(n_samples):
+        if len(X_test[i]) < max_time_length:
+            X_test[i] = np.concatenate((X_test[i], np.zeros((max_time_length - len(X_test[i]), num_inputs))), axis=0)
+            y_test[i] = np.concatenate((y_test[i], np.zeros((max_time_length - len(y_test[i])))), axis=0)
+    X_test, y_test = np.array(X_test), np.array(y_test)
+    np.savez(processed_cyclic_path, X_test=X_test, y_test=y_test)

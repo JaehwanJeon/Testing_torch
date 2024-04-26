@@ -19,12 +19,12 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = False
-preprocess = False
-train = False
+generate_EQ = True
+preprocess = True
+train = True
 analyze_result = True
 
-Title = 'BoucWen_PE'
+Title = 'BoucWen_PE_PI'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -89,7 +89,7 @@ X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_va
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
-alpha = 0.
+alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
