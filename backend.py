@@ -83,45 +83,6 @@ class Loss:
         return -torch.sum(diff_e_neg) / (num_samples * time_length)
 
 
-class CustomLSTMCell2(nn.Module):
-    def __init__(self, input_dim, hidden_dim):
-        super(CustomLSTMCell2, self).__init__()
-        
-        self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
-        
-        # Linear transformation for energy
-        self.energy_transform = nn.Linear(self.hidden_dim, self.hidden_dim, bias=False)  ##### 이게 맞는지 모르겠다
-        
-        # Input gate
-        self.fc_i = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)  # *2 for energy
-        # Forget gate
-        self.fc_f = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-        # Cell state
-        self.fc_c = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-        # Output gate
-        self.fc_o = nn.Linear(self.input_dim + self.hidden_dim * 2, self.hidden_dim)
-
-        self.ln_h = nn.LayerNorm(self.hidden_dim)
-
-    def forward(self, x, h_energy, states):
-        h, c = states
-        h_normalized = self.ln_h(h)
-        # Transform the energy
-        transformed_energy = torch.tanh(self.energy_transform(h_energy))
-        
-        h_combined = torch.cat([x, transformed_energy, h_normalized], 1)  # concatenate along the feature dimension
-
-        i = torch.sigmoid((self.fc_i(h_combined)))
-        f = torch.sigmoid((self.fc_f(h_combined)))
-        g = torch.tanh((self.fc_c(h_combined)))
-        o = torch.sigmoid((self.fc_o(h_combined)))
-        
-        c_next = f * c + i * g
-        h_next = self.ln_h(o * torch.tanh(c_next) + h)    # Adding residual connection
-
-        return h_next, c_next
-
 
 class CustomLSTM2(nn.Module):
     def __init__(self, input_dim, hidden_dim, hidden_dim2, output_dim):

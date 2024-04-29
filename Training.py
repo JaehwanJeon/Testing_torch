@@ -77,7 +77,7 @@ def train(X_train,
             loss.backward()
             optimizer.step()
 
-            states = (states[0].detach(), states[1].detach(), states[2].detach(), states[3].detach(), states[4].detach(), states[5].detach())
+            states = tuple(state.detach() for state in states)
             
         avg_loss = sum(losses) / len(losses)
         epoch_losses.append(avg_loss)

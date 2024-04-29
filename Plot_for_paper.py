@@ -361,5 +361,21 @@ axs[1, 3].text(0.5, -0.22, '(h)', transform=axs[1, 3].transAxes, fontsize=10, fo
 fig.text(0.5, -0.05, 'Normalized displacement', ha='center')
 fig.text(0.05, 0.5, 'Normalized force', va='center', rotation='vertical')
 fig.savefig(os.path.join(save_dir, 'Bilinear_PE_PI_DA_Cyclic_RO_PE_PI_DA_Cyclic.svg'), bbox_inches='tight')
-# %%
 
+
+
+
+
+# %%
+Title = 'IMK_PE_PI_DA'
+processed_data_path = os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz'))
+Data = np.load(processed_data_path)
+X_test, y_test = Data['X_test'], Data['y_test']
+del Data
+X_test, mask_test = X_test[:, :, :1], X_test[:, :, 1]
+X_test = [X_test[i, mask_test[i].astype(int).astype(bool), 0] for i in range(len(X_test))]
+y_test = [y_test[i, mask_test[i].astype(int).astype(bool)] for i in range(len(y_test))]
+# %%
+i = 27
+plt.plot(X_test[i], y_test[i], '*')
+plt.plot(X_test[i], y_test[i], 'k', linewidth=0.7, alpha=0.7)
