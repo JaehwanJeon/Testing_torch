@@ -14,8 +14,8 @@ def train(X_train,
           X_val,
           y_val,
           mask_val,
+          model,
           num_epochs,
-          nn_size,
           alpha,
           window_size,
           checkpoint_dir,
@@ -23,15 +23,14 @@ def train(X_train,
           checkpoint_epoch,
           existing_checkpoint=False,
           augmentation_rate=False,
-          result_plot_dir=False):
+          result_plot_dir=False,
+          device = torch.device('cuda:0')):
 
     if not result_plot_dir:
         result_plot_dir = checkpoint_dir
 
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
     
-    model = CustomLSTM(2, nn_size, 1)
     if existing_checkpoint != False:
         model.load_state_dict(existing_checkpoint)
     model = model.to(device)
@@ -45,7 +44,7 @@ def train(X_train,
     # Obtaining initial normalization factor for data-driven loss vs physics-based loss
     states = None
     model.eval()
-    outputs, energies, states = outputs, energies, states = model(add_diff(X_train), states)
+    outputs, energies, states = model(add_diff(X_train), states)
     LossClass = Loss(outputs[:, :, 0], y_train, energies[:, :, 0], mask_train, device)
     criterion = LossClass.combined_loss
 

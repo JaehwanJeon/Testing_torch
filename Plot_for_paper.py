@@ -379,3 +379,14 @@ y_test = [y_test[i, mask_test[i].astype(int).astype(bool)] for i in range(len(y_
 i = 27
 plt.plot(X_test[i], y_test[i], '*')
 plt.plot(X_test[i], y_test[i], 'k', linewidth=0.7, alpha=0.7)
+
+
+
+
+# %%
+def count_trainable_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+model = CustomLSTM(2, 64, 1)
+for name, param in model.named_parameters():
+    print(f"Name: {name}, Shape: {param.shape}")

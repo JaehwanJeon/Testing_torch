@@ -50,10 +50,11 @@ class Loss:
         pass
 
     def combined_loss(self, y_pred, y, energies, mask, alpha=0.2):
-        self.mse_loss = torch.mean((y_pred - y)**2 * mask) / self.mse_loss_init
-        self.phys_loss = self.drucker_loss(y_pred, energies, mask) / self.phys_loss_init  # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
-        print('MSE Loss / Phys Loss: {:.8f}/{:.8f}'.format(self.mse_loss, self.phys_loss), end='\r')
-        return (1-alpha) * self.mse_loss + alpha * self.phys_loss
+        self.mse_loss = torch.mean((y_pred - y)**2 * mask)
+        self.phys_loss = self.drucker_loss(y_pred, energies, mask)   # Assuming y_pred and y are 2D tensors [batch_size x seq_length]
+        self.total_loss = (1-alpha) * self.mse_loss / self.mse_loss_init + alpha * self.phys_loss / self.phys_loss_init
+        print('Total Loss / MSE Loss / Phys Loss: {:.8f}/{:.8f}/{:.8f}'.format(self.total_loss, self.mse_loss, self.phys_loss), end='\r')
+        return self.total_loss
     
     def drucker_loss(self, f, e, mask):
     

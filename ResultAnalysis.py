@@ -71,15 +71,15 @@ def result_plot(X_val,
                 X_test,
                 y_test,
                 mask_test,
-                nn_size,
+                model,
                 model_dir,
                 model_paths,
                 title,
-                result_plot_dir):
+                result_plot_dir,
+                device = torch.device('cuda:0')):
 
     os.makedirs(result_plot_dir, exist_ok=True)
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
     X_val, X_test = torch.from_numpy(X_val).float().to(device), torch.from_numpy(X_test).float().to(device)
     X_val, X_test = add_diff(X_val), add_diff(X_test)
     y_val, y_test = torch.from_numpy(y_val).float().to(device), torch.from_numpy(y_test).float().to(device)
@@ -97,7 +97,6 @@ def result_plot(X_val,
             if match:
                 epoch =  int(match.group(1))
             checkpoint = torch.load(model_path)
-            model = Training.CustomLSTM(2, nn_size, 1)
             model.load_state_dict(checkpoint)
             weight = model.cell.energy_transform.weight.cpu().detach().numpy()
             model = model.to(device)
@@ -118,7 +117,6 @@ def result_plot(X_val,
     best_model_idx = np.argmin(losses)
     best_model_epoch = loss_data['Epoch'].values[best_model_idx]
     checkpoint = torch.load(os.path.normpath(os.path.join(model_dir, './' + title +'_checkpoint_{}.pth'.format(int(best_model_epoch)))))
-    model = CustomLSTM(2, nn_size, 1)
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
