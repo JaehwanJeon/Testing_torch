@@ -185,7 +185,8 @@ class CustomLSTM(nn.Module):
         self.hidden_dim = hidden_dim
         
         self.cell = CustomLSTMCell(input_dim, hidden_dim)
-        self.fc = nn.Linear(hidden_dim + 1, output_dim, bias=False)
+        self.fc1 = nn.Linear(hidden_dim, output_dim, bias=False)
+        self.fc2 = nn.Linear(1, output_dim, bias=False)
         
 
     def forward(self, x, states=None):
@@ -201,24 +202,26 @@ class CustomLSTM(nn.Module):
         else:
             h, c, prev_output, h_energy, energy, previous_x = states
 
-        outputs = []
-        energies = []
+        outputs = torch.zeros(batch_size, seq_length, 1).to(x.device)
+        energies = torch.zeros(batch_size, seq_length, 1).to(x.device)
         for t in range(seq_length):
             prev_h = h
             h, c = self.cell(x[:, t, :], h_energy, (h, c))
-            output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
+            current_x = x[:, t, 0].unsqueeze(1)
+            # output = self.fc(torch.cat([h, x[:, t, 0].unsqueeze(1)], dim=1)) # Need to check if this is correct
+            output = self.fc1(h) + self.fc2(current_x) # Need to check if this is correct
             
             # Calculate and accumulate energy using the trapezoid rule
-            current_x = x[:, t, 0].unsqueeze(1)
             delta_disp = current_x - previous_x
             h_energy = h_energy + (h + prev_h) / 2 * delta_disp
             energy = energy + (output + prev_output) / 2 * delta_disp
-            energies.append(energy)
+            # energy = energy + self.fc1((h + prev_h)/ 2 * delta_disp) + self.fc2(current_x + previous_x)) / 2 * delta_disp
+            energies[:, t, :] = energy
             prev_output = output
             previous_x = current_x
-            outputs.append(output)
+            outputs[:, t, :] = output
 
-        return torch.stack(outputs, dim=1), torch.stack(energies, dim=1), (h, c, prev_output, h_energy, energy, previous_x)
+        return outputs, energies, (h, c, prev_output, h_energy, energy, previous_x)
     
 
 
