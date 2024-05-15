@@ -178,16 +178,27 @@ class CustomLSTMCell(nn.Module):
 
 
 class CustomLSTM(nn.Module):
-    def __init__(self, input_dim, hidden_dim, output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim, norm_factors=None):
         super(CustomLSTM, self).__init__()
 
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
-        
+        self.output_dim = output_dim
         self.cell = CustomLSTMCell(input_dim, hidden_dim)
         self.fc1 = nn.Linear(hidden_dim, output_dim, bias=False)
         self.fc2 = nn.Linear(1, output_dim, bias=False)
+
+        if norm_factors is not None:
+            self.denormalize(norm_factors)
         
+
+    def denormalize(self, norm_factors):
+        self.norm_factor_input = norm_factors[0][0]
+        self.norm_factor_output = norm_factors[1]
+        self.norm_input = nn.Linear(self.input_dim, self.input_dim, bias=False)
+        self.norm_output = nn.Linear(self.output_dim, self.output_dim, bias=False)
+        self.norm_input.weight.data = torch.diag(torch.tensor([1 / self.norm_factor_input, 1 / self.norm_factor_input], dtype=torch.float32))
+        self.norm_output.weight.data = torch.diag(torch.tensor([self.norm_factor_output], dtype=torch.float32))
 
     def forward(self, x, states=None):
         batch_size, seq_length, _ = x.size()
@@ -222,6 +233,13 @@ class CustomLSTM(nn.Module):
             outputs[:, t, :] = output
 
         return outputs, energies, (h, c, prev_output, h_energy, energy, previous_x)
+    
+
+    def forward_denormalize(self, x, states=None):
+        x = self.norm_input(x)
+        outputs, energies, states = self.forward(x, states)
+        return self.norm_output(outputs), energies, states
+
     
 
 

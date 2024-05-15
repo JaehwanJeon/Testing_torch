@@ -20,9 +20,9 @@ import Preprocessing
 import Training
 import ResultAnalysis
 
-generate_EQ = True
-preprocess = True
-train = True
+generate_EQ = False
+preprocess = False
+train = False
 analyze_result = True
 
 Title = 'BoucWen_PE_PI_DA2'
@@ -86,12 +86,13 @@ if preprocess:
 device = torch.device('cuda:1')
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
+normalize_gap, X_max, y_max = Data['normalize_gap'], Data['X_max'], Data['y_max']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_val[:, :, :1], X_val[:, :, 1]
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
-model = CustomLSTM(2, nn_size, 1)
+model = CustomLSTM(2, nn_size, 1, norm_factors=[X_max * (1 + normalize_gap), y_max * (1 + normalize_gap)])
 alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
