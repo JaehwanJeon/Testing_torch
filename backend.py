@@ -187,6 +187,8 @@ class CustomLSTM(nn.Module):
         self.cell = CustomLSTMCell(input_dim, hidden_dim)
         self.fc1 = nn.Linear(hidden_dim, output_dim, bias=False)
         self.fc2 = nn.Linear(1, output_dim, bias=False)
+        self.norm_input = nn.Linear(self.input_dim, self.input_dim, bias=False)
+        self.norm_output = nn.Linear(self.output_dim, self.output_dim, bias=False)
 
         if norm_factors is not None:
             self.denormalize(norm_factors)
@@ -195,11 +197,12 @@ class CustomLSTM(nn.Module):
     def denormalize(self, norm_factors):
         self.norm_factor_input = norm_factors[0][0]
         self.norm_factor_output = norm_factors[1]
-        self.norm_input = nn.Linear(self.input_dim, self.input_dim, bias=False)
-        self.norm_output = nn.Linear(self.output_dim, self.output_dim, bias=False)
         self.norm_input.weight.data = torch.diag(torch.tensor([1 / self.norm_factor_input, 1 / self.norm_factor_input], dtype=torch.float32))
         self.norm_output.weight.data = torch.diag(torch.tensor([self.norm_factor_output], dtype=torch.float32))
 
+    def load_norm_factors(self):
+        self.norm_factor_input = 1 / self.norm_input.weight[0, 0].item()
+        self.norm_factor_output = self.norm_output.weight[0, 0].item()
 
     def forward(self, x, states=None):
         batch_size, seq_length, _ = x.size()
@@ -243,18 +246,59 @@ class CustomLSTM(nn.Module):
 
     
     def dynamic_analysis(self, dt, gm, m, c, device='cuda'):
-        fs = 0
-        u, u_dot = 0, 0
-        x = torch.zeros(len(gm), 2).to(device)
-        states = None
         p = - m * gm
-        for i in range(len(p)):
-            u_dot_dot = (p[:, i] - c * u_dot - fs) / m
-            u_dot = u_dot + u_dot_dot * dt
-            u = u + u_dot * dt
-            x[i, 0], x[i, 1] = u, u_dot
-            fs, _, states = self.forward_denormalize(u, states)
-        return x
+        U = torch.zeros(1, len(gm), 3).to(device)
+        inputs = torch.zeros(1, len(gm), 2).to(device)
+        fs, _, states = self.forward_denormalize(inputs[:, 0:1, :], None)
+        U[0, 0, 2] = (p[0] - c * U[0, 0, 1] - fs) / m
+        u_p1 = U[0, 0, 0] - dt * U[0, 0, 1] + 0.5 * dt**2 * U[0, 0, 2]
+        k_hat = m / dt**2 + c / (2 * dt)
+
+        p_hat = p[0] - (m/dt**2 - c/(2*dt)) * u_p1 + 2*m/(dt**2) * U[0, 0, 0] - fs
+        U[0, 1, 0] = p_hat / k_hat
+        U[0, 0, 1] = (U[0, 1, 0] - u_p1) / (2 * dt)
+        U[0, 0, 2] = (U[0, 1, 0] - 2 * U[0, 0, 0] + u_p1) / dt**2
+
+        for i in range(1, len(gm) - 1):
+            u_p1 = U[0, i-1, 0]
+            inputs[0, i, 0], inputs[0, i, 1] = U[0, i, 0], U[0, i, 0] - u_p1
+            fs, _, states = self.forward_denormalize(inputs[:, i:i+1, :], states)
+            p_hat = p[i] - (m/dt**2 - c/(2*dt)) * u_p1 + 2*m/(dt**2) * U[0, i, 0] - fs
+            U[0, i+1, 0] = p_hat / k_hat
+            U[0, i, 1] = (U[0, i+1, 0] - u_p1) / (2 * dt)
+            U[0, i, 2] = (U[0, i+1, 0] - 2 * U[0, i, 0] + u_p1) / dt**2
+
+        # u_p1 = U[0, 0, 0]
+        # inputs[0, 1, 0], inputs[0, 1, 1] = U[0, 1, 0], U[0, 1, 0] - u_p1
+        # fs, _, states = self.forward_denormalize(inputs[:, 1:2, :], states)
+        # p_hat = p[1] - (m/dt**2 - c/(2*dt)) * u_p1 + 2*m/(dt**2) * U[0, 1, 0] - fs
+        # U[0, 2, 0] = p_hat / k_hat
+        # U[0, 1, 1] = (U[0, 2, 0] - u_p1) / (2 * dt)
+        # U[0, 1, 2] = (U[0, 2, 0] - 2 * U[0, 1, 0] + u_p1) / dt**2
+
+        # u_p1 = U[0, 1, 0]
+        # inputs[0, 2, 0], inputs[0, 2, 1] = U[0, 2, 0], U[0, 2, 0] - u_p1
+        # fs, _, states = self.forward_denormalize(inputs[:, 2:3, :], states)
+        # p_hat = p[2] - (m/dt**2 - c/(2*dt)) * u_p1 + 2*m/(dt**2) * U[0, 2, 0] - fs
+        # U[0, 3, 0] = p_hat / k_hat
+        # U[0, 2, 1] = (U[0, 3, 0] - u_p1) / (2 * dt)
+        # U[0, 2, 2] = (U[0, 3, 0] - 2 * U[0, 2, 0] + u_p1) / dt**2
+
+
+
+
+        # x = torch.zeros(len(gm), 2).to(device)
+        # inputs = torch.zeros(1, len(gm), 2).to(device)
+        # states = None
+        
+        # for i in range(len(p)):
+        #     u_dot_dot = (p[i] - c * u_dot - fs) / m
+        #     u_dot = u_dot + u_dot_dot * dt
+        #     inputs[0, i, 1] = u_dot * dt
+        #     inputs[0, i, 0] = inputs[0, i, 0] + inputs[0, i, 1]
+        #     x[i, 0], x[i, 1] = inputs[0, i, 0], u_dot
+        #     fs, _, states = self.forward_denormalize(inputs[:, i:i+1, :], states)
+        return U
 
     # def forward_single(self, h_prev, c_prev, h_energy_prev, x_prev, output_prev, x_current):
     #     h, c = self.cell(x_current, h_energy_prev, (h_prev, c_prev))
@@ -392,6 +436,46 @@ def test_prediction(loss_dir,
 
     # Save test results
     np.savez(save_data_path, X_test=X_test, y_test=y_test, mask_test=mask_test, y_test_pred=y_test_pred)
+
+
+def test_prediction_denormalize(loss_dir,
+                    Title,
+                    model_dir,
+                    processed_data_path,
+                    save_data_path,
+                    device):
+    loss_data = pd.read_csv(os.path.normpath(os.path.join(loss_dir, Title + '_loss.csv')))
+    losses = loss_data['Loss'].values
+
+    best_model_idx = np.argmin(losses)
+    best_model_epoch = loss_data['Epoch'].values[best_model_idx]
+    checkpoint = torch.load(os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_{}.pth'.format(int(best_model_epoch)))))
+
+    nn_size = checkpoint['cell.fc_f.bias'].size()[0]
+    model = CustomLSTM(2, nn_size, 1)
+    model.load_state_dict(checkpoint)
+    model.load_norm_factors()
+    model = model.to(device)
+    model.eval()
+
+    # Load test data
+    Data = np.load(processed_data_path)
+    X_test, y_test = Data['X_test'], Data['y_test']
+    del Data
+    X_test, mask_test = X_test[:, :, :1], X_test[:, :, 1]
+    X_test =torch.from_numpy(X_test).float().to(device)
+    X_test = add_diff(X_test)
+    y_test = torch.from_numpy(y_test).float().to(device)
+    mask_test = torch.from_numpy(mask_test).float().to(device)
+
+    y_test_pred, energies_test, _ = model.forward_denormalize(X_test * model.norm_factor_input)
+    y_test_pred = y_test_pred.cpu().detach().numpy()
+    X_test = X_test.cpu().detach().numpy()
+    y_test = y_test.cpu().detach().numpy()
+    mask_test = mask_test.cpu().detach().numpy()
+
+    # Save test results
+    np.savez(save_data_path, X_test=X_test * model.norm_factor_input, y_test=y_test * model.norm_factor_output, mask_test=mask_test, y_test_pred=y_test_pred)
 
 
 def generate_cyclic(mat_type,
