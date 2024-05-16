@@ -200,6 +200,7 @@ class CustomLSTM(nn.Module):
         self.norm_input.weight.data = torch.diag(torch.tensor([1 / self.norm_factor_input, 1 / self.norm_factor_input], dtype=torch.float32))
         self.norm_output.weight.data = torch.diag(torch.tensor([self.norm_factor_output], dtype=torch.float32))
 
+
     def forward(self, x, states=None):
         batch_size, seq_length, _ = x.size()
 
@@ -241,6 +242,28 @@ class CustomLSTM(nn.Module):
         return self.norm_output(outputs), energies, states
 
     
+    def dynamic_analysis(self, dt, gm, m, c, device='cuda'):
+        fs = 0
+        u, u_dot = 0, 0
+        x = torch.zeros(len(gm), 2).to(device)
+        states = None
+        p = - m * gm
+        for i in range(len(p)):
+            u_dot_dot = (p[:, i] - c * u_dot - fs) / m
+            u_dot = u_dot + u_dot_dot * dt
+            u = u + u_dot * dt
+            x[i, 0], x[i, 1] = u, u_dot
+            fs, _, states = self.forward_denormalize(u, states)
+        return x
+
+    # def forward_single(self, h_prev, c_prev, h_energy_prev, x_prev, output_prev, x_current):
+    #     h, c = self.cell(x_current, h_energy_prev, (h_prev, c_prev))
+    #     output = self.fc(torch.cat([h, x_current[:, 0].unsqueeze(1)], dim=1))
+
+    #     # Calculate and accumulate energy using the trapezoid rule
+    #     delta_disp = x_current[:, 0].unsqueeze(1) - x_prev
+    #     h_energy = h_energy_prev + (h + h_prev) / 2 * delta_disp
+    #     energy = output_prev + (output + output_prev) / 2 * delta_disp
 
 
 def result_data(processed_data_dir, 

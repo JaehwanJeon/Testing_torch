@@ -120,7 +120,7 @@ def result_plot(X_val,
     model.load_state_dict(checkpoint)
     model = model.to(device)
     model.eval()
-    y_val_pred, energies_val, _ = model(X_val)
+    y_val_pred, energies_val, _ = model.forward_denormalize(X_val * model.norm_factor_input)
     y_val_pred = y_val_pred.cpu().detach().numpy()
     X_val = X_val.cpu().detach().numpy()
     y_val = y_val.cpu().detach().numpy()
@@ -131,8 +131,8 @@ def result_plot(X_val,
         y_val_pred_i = y_val_pred[i, mask_val[i].astype(int).astype(bool)]
         y_val_i = y_val[i, mask_val[i].astype(int).astype(bool)]
         plt.figure(figsize=(8, 8))
-        plt.plot(X_val_i, y_val_i, 'b')
-        plt.plot(X_val_i, y_val_pred_i, 'r')
+        plt.plot(X_val_i * model.norm_factor_input, y_val_i * model.norm_factor_output, 'b')
+        plt.plot(X_val_i * model.norm_factor_input, y_val_pred_i, 'r')
         plt.grid()
         plt.xlabel('Displacement (m)', fontsize=12)
         plt.ylabel('Force (N)', fontsize=12)
