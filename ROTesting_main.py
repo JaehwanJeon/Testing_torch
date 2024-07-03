@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import random
+from backend import *
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -24,7 +25,7 @@ preprocess = True
 train = True
 analyze_result = True
 
-Title = 'RO_PE_PI'
+Title = 'RO_PE_PI_DA2'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -82,13 +83,16 @@ if preprocess:
 
 
 # Training
+device = torch.device('cuda:0')
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
+normalize_gap, X_max, y_max = Data['normalize_gap'], Data['X_max'], Data['y_max']
 del Data
 X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_val[:, :, :1], X_val[:, :, 1]
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
+model = CustomLSTM(2, nn_size, 1, norm_factors=[X_max * (1 + normalize_gap), y_max * (1 + normalize_gap)])
 alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
@@ -97,8 +101,7 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
-augmentation_rate = False
-
+augmentation_rate = 0.8
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
@@ -113,8 +116,8 @@ if train:
                                 X_val,
                                 y_val,
                                 mask_val,
+                                model,
                                 num_epochs,
-                                nn_size,
                                 alpha,
                                 window_size,
                                 checkpoint_dir=model_dir,
@@ -122,14 +125,14 @@ if train:
                                 checkpoint_epoch=checkpoint_epoch,
                                 existing_checkpoint=checkpoint,
                                 augmentation_rate=augmentation_rate,
-                                result_plot_dir=result_plot_dir)
+                                result_plot_dir=result_plot_dir,
+                                device=device)
 
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_val, X_test, y_val, y_test = Data['X_val'], Data['X_test'], Data['y_val'], Data['y_test']
 del Data
 X_val, mask_val, X_test, mask_test = X_val[:, :, :1], X_val[:, :, 1], X_test[:, :, :1], X_test[:, :, 1]
 model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
-# model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title +'_checkpoint_8.pth'))]
 
 if analyze_result:
     ResultAnalysis.result_plot(X_val,
@@ -138,8 +141,9 @@ if analyze_result:
                 X_test,
                 y_test,
                 mask_test,
-                nn_size,
+                model,
                 model_dir,
                 model_paths,
                 Title,
-                result_plot_dir)
+                result_plot_dir,
+                device = device)

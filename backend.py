@@ -249,7 +249,9 @@ class CustomLSTM(nn.Module):
         p = - m * gm
         U = torch.zeros(1, len(gm), 3).to(device)
         inputs = torch.zeros(1, len(gm), 2).to(device)
+        force = torch.zeros(len(gm)).to(device)
         fs, _, states = self.forward_denormalize(inputs[:, 0:1, :], None)
+        force[0] = fs[0, 0, 0]
         U[0, 0, 2] = (p[0] - c * U[0, 0, 1] - fs) / m
         u_p1 = U[0, 0, 0] - dt * U[0, 0, 1] + 0.5 * dt**2 * U[0, 0, 2]
         k_hat = m / dt**2 + c / (2 * dt)
@@ -263,6 +265,7 @@ class CustomLSTM(nn.Module):
             u_p1 = U[0, i-1, 0]
             inputs[0, i, 0], inputs[0, i, 1] = U[0, i, 0], U[0, i, 0] - u_p1
             fs, _, states = self.forward_denormalize(inputs[:, i:i+1, :], states)
+            force[i] = fs[0, 0, 0]
             p_hat = p[i] - (m/dt**2 - c/(2*dt)) * u_p1 + 2*m/(dt**2) * U[0, i, 0] - fs
             U[0, i+1, 0] = p_hat / k_hat
             U[0, i, 1] = (U[0, i+1, 0] - u_p1) / (2 * dt)
@@ -298,7 +301,7 @@ class CustomLSTM(nn.Module):
         #     inputs[0, i, 0] = inputs[0, i, 0] + inputs[0, i, 1]
         #     x[i, 0], x[i, 1] = inputs[0, i, 0], u_dot
         #     fs, _, states = self.forward_denormalize(inputs[:, i:i+1, :], states)
-        return U
+        return U, force
 
     # def forward_single(self, h_prev, c_prev, h_energy_prev, x_prev, output_prev, x_current):
     #     h, c = self.cell(x_current, h_energy_prev, (h_prev, c_prev))
