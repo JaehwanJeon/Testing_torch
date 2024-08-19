@@ -25,7 +25,7 @@ preprocess = True
 train = True
 analyze_result = True
 
-Title = 'BWBN_LSTM'
+Title = 'BWBN_PyLSTM'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -92,7 +92,7 @@ X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_va
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
-model = BasicLSTM(2, nn_size, 1)
+model = PyLSTM(2, nn_size, 1)
 alpha = 0
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
