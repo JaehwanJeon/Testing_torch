@@ -25,7 +25,7 @@ preprocess = True
 train = True
 analyze_result = True
 
-Title = 'BWBN_PE_PI_DA2'
+Title = 'BWBN_LSTM'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -83,7 +83,7 @@ if preprocess:
 
 
 # Training
-device = torch.device('cuda:1')
+device = torch.device('cuda:0')
 Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
 X_train, X_val, y_train, y_val = Data['X_train'], Data['X_val'], Data['y_train'], Data['y_val']
 normalize_gap, X_max, y_max = Data['normalize_gap'], Data['X_max'], Data['y_max']
@@ -92,8 +92,8 @@ X_train, mask_train, X_val, mask_val = X_train[:, :, :1], X_train[:, :, 1], X_va
 max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
-model = CustomLSTM(2, nn_size, 1, norm_factors=[X_max * (1 + normalize_gap), y_max * (1 + normalize_gap)])
-alpha = 0.2
+model = BasicLSTM(2, nn_size, 1)
+alpha = 0
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
@@ -101,7 +101,7 @@ window_size = 512
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
-augmentation_rate = 0.8
+augmentation_rate = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
