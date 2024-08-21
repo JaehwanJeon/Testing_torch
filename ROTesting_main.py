@@ -25,7 +25,7 @@ preprocess = True
 train = True
 analyze_result = True
 
-Title = 'RO_LSTM'
+Title = 'RO_PI'
 
 
 EQ_data_dir = '/home/jaehwan/Python Project/DLCM/Data'
@@ -93,7 +93,7 @@ max_len_train = np.argmin(mask_train.sum(axis=0))
 X_train, mask_train, y_train = X_train[:, :max_len_train, :], mask_train[:, :max_len_train], y_train[:, :max_len_train]
 nn_size = 64
 model = BasicLSTM(2, nn_size, 1)
-alpha = 0
+alpha = 0.2
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
