@@ -301,30 +301,40 @@ class BasicLSTM(nn.Module):
         self.cell = BasicLSTMCell(input_dim, hidden_dim)
         self.fc = nn.Linear(hidden_dim, output_dim)
         
-    def forward(self, x, init_states=None):
+    def forward(self, x, states=None):
         """
         forward method for the LSTM.
         """
         batch_size, seq_length, _ = x.size()
         
         # Initialize h and c for the first timestep
-        if init_states is None:
+        if states is None:
             h = torch.zeros(batch_size, self.hidden_dim).to(x.device)
             c = torch.zeros(batch_size, self.hidden_dim).to(x.device)
+            prev_output = torch.zeros(batch_size, 1).to(x.device)
+            energy = torch.zeros(batch_size, 1).to(x.device)
+            previous_x = torch.zeros(batch_size, 1).to(x.device)  # Initialize previous_x with zeros
         else:
-            h, c = init_states
+            h, c, prev_output, energy, previous_x = states
         
         outputs = []
-        
+        energies = []        
         for t in range(seq_length):
             h, c = self.cell(x[:, t, :], (h, c))
             output = self.fc(h)
+            current_x = x[:, t, 0].unsqueeze(1)
+            delta_disp = current_x - previous_x
+            energy = energy + (output + prev_output) / 2 * delta_disp
+            energies.append(energy)
+            prev_output = output
+            previous_x = current_x
             outputs.append(output)
         
         # Stack outputs along the sequence dimension
         outputs = torch.stack(outputs, dim=1)
+        energies = torch.stack(energies, dim=1)
         
-        return outputs, outputs, (h, c)
+        return outputs, energies, (h, c, prev_output, energy, previous_x)
     
 
 def result_data(processed_data_dir, 
