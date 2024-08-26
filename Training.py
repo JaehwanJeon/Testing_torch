@@ -67,9 +67,9 @@ def train(X_train,
                     augmented_idx, _ = torch.sort(augmented_idx)
                     X_train, y_train, mask_train = X_train_[:, augmented_idx], y_train_[:, augmented_idx], mask_train_[:, augmented_idx]
                     X_train = add_diff(X_train)
-                batch_idx = torch.randperm(X_train.shape[1])[:batch_size]
+                batch_idx = torch.randperm(X_train.shape[0])[:batch_size]
                 states = None
-                for step in range(0, X_train.shape[1]-int(window_size * augmentation_rate) + 1, int(window_size*augmentation_rate)):
+                for step in range(0, X_train.shape[1]-int(window_size) + 1, int(window_size)):
                     # print('Step:', step, '//', X_train.shape[1]-window_size, end='\r')
                     inputs = X_train[batch_idx, step:step+window_size]
                     labels = y_train[batch_idx, step:step+window_size]
@@ -111,7 +111,7 @@ def train(X_train,
             states = None
             losses = []
             print('Epoch:', epoch+1)
-            for step in range(0, X_train.shape[1]-int(window_size * augmentation_rate) + 1, int(window_size*augmentation_rate)):
+            for step in range(0, X_train.shape[1]- window_size, window_size):
                 # print('Step:', step, '//', X_train.shape[1]-window_size, end='\r')
                 inputs = X_train[:, step:step+window_size]
                 labels = y_train[:, step:step+window_size]

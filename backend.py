@@ -461,9 +461,10 @@ def test_prediction(loss_dir,
     X_test = X_test.cpu().detach().numpy()
     y_test = y_test.cpu().detach().numpy()
     mask_test = mask_test.cpu().detach().numpy()
+    energies_test = energies_test.cpu().detach().numpy()
 
     # Save test results
-    np.savez(save_data_path, X_test=X_test, y_test=y_test, mask_test=mask_test, y_test_pred=y_test_pred)
+    np.savez(save_data_path, X_test=X_test, y_test=y_test, mask_test=mask_test, y_test_pred=y_test_pred, energies_test=energies_test)
 
 
 def generate_cyclic(mat_type,
@@ -497,3 +498,37 @@ def generate_cyclic(mat_type,
             y_test[i] = np.concatenate((y_test[i], np.zeros((max_time_length - len(y_test[i])))), axis=0)
     X_test, y_test = np.array(X_test), np.array(y_test)
     np.savez(processed_cyclic_path, X_test=X_test, y_test=y_test)
+
+
+
+
+def drucker_loss_numpy(f, e, mask):
+    num_samples, time_length = f.shape
+    num_chops = 201
+    chop_vector = np.linspace(-1, 1, num_chops)
+
+    # Expand the mask and tensors along the second axis
+    mask_expanded = np.expand_dims(mask, axis=1) * np.ones((num_samples, num_chops, time_length))
+    f_expanded = np.expand_dims(f, axis=1) * np.ones((num_samples, num_chops, time_length))
+    e_expanded = np.expand_dims(e, axis=1) * np.ones((num_samples, num_chops, time_length))
+
+    chop_vector_expanded = np.expand_dims(np.expand_dims(chop_vector, axis=0), axis=-1) * np.ones((num_samples, num_chops, time_length))
+    deducted_f_expanded = f_expanded - chop_vector_expanded
+
+    # Create deducted_f_sign tensor with size [num_samples, num_chops, time_length]
+    deducted_f_sign = (deducted_f_expanded > 0).astype(int)
+
+    diff_sign = np.diff(deducted_f_sign, axis=2, prepend=deducted_f_sign[:, :, [0]])
+    change_bool = (diff_sign != 0) & mask_expanded.astype(bool)
+    change_idx = np.argwhere(change_bool)
+
+    selected_e = e_expanded[change_idx[:, 0], change_idx[:, 1], change_idx[:, 2]]
+    diff_e = selected_e[1:] - selected_e[:-1]
+    diff_idx = change_idx[1:] - change_idx[:-1]
+    
+    # Compare for the same sample and chop_vector index
+    valid_diff_e = (diff_idx[:, 0] == 0) & (diff_idx[:, 1] == 0)
+    diff_e *= valid_diff_e
+    diff_e_neg = diff_e[diff_e < 0]
+
+    return -np.sum(diff_e_neg) / mask.sum()

@@ -22,7 +22,7 @@ import ResultAnalysis
 train = True
 analyze_result = True
 
-Title = 'OP_4_PE_PI_DA'
+Title = 'OP_4_PE'
 
 
 hysteresis_data_dir = 'Xu_hysteresis'
@@ -44,6 +44,7 @@ seed = 0
 hysteresis_path = os.path.normpath(os.path.join(hysteresis_data_dir, './' + 'data_OP_4_final.mat'))
 Data = scipy.io.loadmat(hysteresis_path)
 X_train, y_train = Data['X_train'], Data['y_train']
+X_train, y_train = X_train[:1000], y_train[:1000]
 X_val, y_val = Data['X_valid'], Data['y_valid']
 X_test, y_test = Data['X_test'], Data['y_test']
 processed_data_dir = hysteresis_data_dir
@@ -56,7 +57,7 @@ mask_train, mask_val, mask_test = np.ones_like(y_train), np.ones_like(y_val), np
 device = torch.device('cuda:0')
 nn_size = 64
 model = CustomLSTM(2, nn_size, 1)
-alpha = 0.2
+alpha = 0.0
 num_epochs = 1000
 model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
 os.makedirs(model_dir, exist_ok=True) 
@@ -64,7 +65,7 @@ window_size = 1000
 checkpoint_epoch = 5
 pretrained = False
 checkpoint = False
-augmentation_rate = 0.95
+augmentation_rate = False
 if pretrained != False:
     checkpoint = torch.load(pretrained)
 
@@ -89,7 +90,7 @@ if train:
                                 existing_checkpoint=checkpoint,
                                 augmentation_rate=augmentation_rate,
                                 result_plot_dir=result_plot_dir,
-                                batch_size=128,
+                                batch_size=256,
                                 device=device)
 
 model_paths = [os.path.normpath(os.path.join(model_dir, './' + Title + '_checkpoint_{}.pth'.format(i+checkpoint_epoch))) for i in range(0, num_epochs, checkpoint_epoch)]
