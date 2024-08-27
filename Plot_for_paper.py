@@ -111,21 +111,22 @@ fig.savefig(os.path.join(save_dir, 'LICYC.svg'), bbox_inches='tight')
 
 
 # %% OP
-Data = scipy.io.loadmat('Xu_hysteresis/data_OP_4_final.mat')
-X_train, y_train = Data['X_train'], Data['y_train']
-X_valid, y_valid = Data['X_valid'], Data['y_valid']
-X_test, y_test = Data['X_test'], Data['y_test']
-i = 8
-fig, axs = plt.subplots(2, 2, figsize=(6, 4))
-plt.subplots_adjust(wspace=0.5, hspace=0.5)
-axs[0, 0].plot(X_train[4*i, :, 0], y_train[4*i, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-axs[0, 0].set_title('{}'.format(4*i))
-axs[0, 1].plot(X_train[4*i+1, :, 0], y_train[4*i+1, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-axs[0, 1].set_title('{}'.format(4*i+1))
-axs[1, 0].plot(X_train[4*i+2, :, 0], y_train[4*i+2, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-axs[1, 0].set_title('{}'.format(4*i+2))
-axs[1, 1].plot(X_train[4*i+3, :, 0], y_train[4*i+3, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-axs[1, 1].set_title('{}'.format(4*i+3))
+Data = np.load('Result Plots/OP_4_PE_VelNorm_data.npz')
+Data.keys()
+# X_train, y_train = Data['X_train'], Data['y_train']
+# X_valid, y_valid = Data['X_valid'], Data['y_valid']
+# X_test, y_test = Data['X_test'], Data['y_test']
+# i = 8
+# fig, axs = plt.subplots(2, 2, figsize=(6, 4))
+# plt.subplots_adjust(wspace=0.5, hspace=0.5)
+# axs[0, 0].plot(X_train[4*i, :, 0], y_train[4*i, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# axs[0, 0].set_title('{}'.format(4*i))
+# axs[0, 1].plot(X_train[4*i+1, :, 0], y_train[4*i+1, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# axs[0, 1].set_title('{}'.format(4*i+1))
+# axs[1, 0].plot(X_train[4*i+2, :, 0], y_train[4*i+2, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# axs[1, 0].set_title('{}'.format(4*i+2))
+# axs[1, 1].plot(X_train[4*i+3, :, 0], y_train[4*i+3, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# axs[1, 1].set_title('{}'.format(4*i+3))
 
 
 
