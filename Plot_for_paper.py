@@ -26,7 +26,7 @@ plt.rcParams['legend.fontsize'] = 7 # 범례의 기본 글씨 크기 설정
 device = torch.device('cuda:1')
 save_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/ResultAnalysis_for_paper/Paper'
 os.makedirs(save_dir, exist_ok=True)
-generate_data = True
+generate_data = False
 save_data_dir = os.path.join(save_dir, 'Data')
 os.makedirs(save_data_dir, exist_ok=True)
 
@@ -54,19 +54,19 @@ for i in range(3):
 fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
 plt.subplots_adjust(wspace=0.32)
 for i in range(3):
-    axs[i].plot(disps[i], forces[i], 'k', linewidth=0.7, label='True')
-    axs[i].plot(disps[i], BW_forces[i], 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
+    axs[i].plot(disps[i]*711.2, forces[i], 'k', linewidth=0.7, label='Reference')
+    axs[i].plot(disps[i]*711.2, BW_forces[i], 'orange', linewidth=0.7, linestyle='--', alpha=0.8, label='BW')
     axs[i].grid()
     # axs[i].set_xlim([-0.12, 0.12])
     # axs[i].set_ylim([-1.2, 1.2])
     # axs[i].text(0.5, -0.25, '({})'.format(chr(97+i)), transform=axs[i].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-    axs[i].set_xlabel('Displacement [m]')
-axs[0].set_ylim([-750, 980])
-axs[0].set_ylabel('Force [N]')
+    axs[i].set_xlabel('Displacement [mm]')
+axs[0].set_ylim([-750, 982])
+axs[0].set_ylabel('Force [kN]')
 axs[0].legend(loc='upper left', fontsize=5.5, ncol=2)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 fig.savefig(os.path.join(save_dir, 'LIRAND.svg'), bbox_inches='tight')
 
 
@@ -84,35 +84,57 @@ fig, axs = plt.subplots(1, 2, figsize=(4, 1.8))
 plt.subplots_adjust(wspace=0.32)
 
 # 첫 번째 서브플롯 (axs[0])
-line1, = axs[0].plot(disp, force, 'k', linewidth=0.7, label='True')
-line2, = axs[0].plot(disp, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
-line3, = axs[0].plot(disp, pretrained_force, 'blue', linewidth=0.7, linestyle='--', alpha=0.7, label='Pretrained')
+line1, = axs[0].plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
+line2, = axs[0].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
+line3, = axs[0].plot(disp*711.2, pretrained_force, 'blue', linewidth=0.7, linestyle='--', alpha=0.7, label='Pretrained')
 axs[0].grid()
-axs[0].set_xlabel('Displacement [m]')
-axs[0].set_ylabel('Force [N]')
+axs[0].set_xlabel('Displacement [mm]')
+axs[0].set_ylabel('Force [kN]')
 
 # 두 번째 서브플롯 (axs[1])
-line4, = axs[1].plot(disp, force, 'k', linewidth=0.7)
-line5, = axs[1].plot(disp, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
-line6, = axs[1].plot(disp, trained_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Trained')
+line4, = axs[1].plot(disp*711.2, force, 'k', linewidth=0.7)
+line5, = axs[1].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
+line6, = axs[1].plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Trained')
 
 axs[1].grid()
-axs[1].set_xlabel('Displacement [m]')
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[1].set_xlabel('Displacement [mm]')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 # Figure 전체에 대한 legend 추가
-fig.legend([line1, line2, line3, line6], ['True', 'BW', 'Pretrained', 'Trained'], 
-           loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.6, 1.0))
+fig.legend([line1, line2, line3, line6], ['Reference', 'BW', 'Pretrained', 'Trained'], 
+           loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.565, 1.0))
 
 fig.savefig(os.path.join(save_dir, 'LICYC.svg'), bbox_inches='tight')
 
+MSE_BW = np.sum((force - BW_force) ** 2) / len(force)
+MSE_trained = np.sum((force - trained_force) ** 2) / len(force)
+print('MSE_BW: {:.4e}'.format(MSE_BW))
+print('MSE_trained: {:.4e}'.format(MSE_trained))
+print('Ratio: {:.4f}'.format(MSE_trained / MSE_BW))
 
 
 
-
-# %% OP
+# %% OPFD
 Data = np.load('Result Plots/OP_4_PE_VelNorm_data.npz')
 Data.keys()
+X_test = Data['X_val']
+y_test = Data['y_val']
+y_test_pred = Data['y_val_pred']
+mask_test = Data['mask_val']
+idc = [4, 6, 9]
+fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
+plt.subplots_adjust(wspace=0.32)
+for i in range(len(idc)):
+    axs[i].plot(X_test[idc[i], :, 0], y_test[idc[i], :], 'k', linewidth=0.7)
+    axs[i].plot(X_test[idc[i], :, 0], y_test_pred[idc[i], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+    axs[i].grid()
+axs[1].legend(['Reference', 'Predicted'], loc='lower right', fontsize=5.5)
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].set_xlabel('Normalized displacement')
+axs[0].set_ylabel('Normalized force')
+fig.savefig(os.path.join(save_dir, 'OPFD.svg'), bbox_inches='tight')
 # X_train, y_train = Data['X_train'], Data['y_train']
 # X_valid, y_valid = Data['X_valid'], Data['y_valid']
 # X_test, y_test = Data['X_test'], Data['y_test']
@@ -147,21 +169,23 @@ if generate_data:
 
 Data = np.load(os.path.join(save_data_dir, 'BWSamples.npz'))
 BW_X, BW_y, BWBN_X, BWBN_y = Data['BW_X'], Data['BW_y'], Data['BWBN_X'], Data['BWBN_y']
-fig, axs = plt.subplots(1, 2, figsize=(6, 2))
+BW_X, BW_y = BW_X[:20000], BW_y[:20000]
+fig, axs = plt.subplots(1, 2, figsize=(6, 2.2))
 plt.subplots_adjust(wspace=0.5)
-axs[0].plot(BW_X, BW_y, 'k', linewidth=0.7)
+axs[0].plot(BW_X, BW_y, 'k', linewidth=0.4)
 axs[0].set_xlabel('Displacement')
 axs[0].set_ylabel('Force')
-axs[0].set_xticklabels([])
-axs[0].set_yticklabels([])
-axs[0].grid()
-axs[1].plot(BWBN_X, BWBN_y, 'k', linewidth=0.7)
+axs[0].set_xticks([])
+axs[0].set_yticks([])
+# axs[0].grid()
+axs[1].plot(BWBN_X, BWBN_y, 'k', linewidth=0.4)
 axs[1].set_xlabel('Displacement')
-axs[1].set_xticklabels([])
-axs[1].set_yticklabels([])
-axs[1].grid()
-axs[0].text(0.5, -0.2, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[1].set_ylabel('Force')
+axs[1].set_xticks([])
+axs[1].set_yticks([])
+# axs[1].grid()
+axs[0].text(0.5, -0.2, '(a)', transform=axs[0].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
 fig.savefig(os.path.join(save_dir, 'BW.svg'), bbox_inches='tight')
 
 
@@ -202,14 +226,15 @@ axs[0].plot(X, y, 'k', linewidth=0.7, alpha=0.5)
 axs[0].plot(X[::sample_rate_0], y[::sample_rate_0], '*', alpha=0.5, markersize=2, color='r')
 axs[0].set_xlabel('Displacement')
 axs[0].set_ylabel('Force')
-axs[0].set_xticklabels([])
-axs[0].set_yticklabels([])
+axs[0].set_xticks([])
+axs[0].set_yticks([])
 axs[0].text(0.5, -0.15, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
 axs[1].plot(X, y, 'k', linewidth=0.7, alpha=0.5)
 axs[1].plot(X[::sample_rate_1], y[::sample_rate_1], '*', alpha=0.5, markersize=2, color='b')
 axs[1].set_xlabel('Displacement')
-axs[1].set_xticklabels([])
-axs[1].set_yticklabels([])
+axs[1].set_ylabel('Force')
+axs[1].set_xticks([])
+axs[1].set_yticks([])
 axs[1].text(0.5, -0.15, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
 
 fig.savefig(os.path.join(save_dir, 'RATE_b.svg'), bbox_inches='tight')
@@ -218,6 +243,7 @@ fig.savefig(os.path.join(save_dir, 'RATE_b.svg'), bbox_inches='tight')
 
 
 # %% Plot @ALG
+from matplotlib.collections import LineCollection
 if generate_data:
     Title = 'BWBN_PE_PI_DA_VelNorm'
     id = 9
@@ -234,23 +260,41 @@ if generate_data:
 
 Data = np.load(os.path.join(save_data_dir, 'ALGSamples.npz'))
 X, y = Data['X'], Data['y']
-fig, axs = plt.subplots(1, 1, figsize=(2, 2))
-axs.plot(X, y, 'k', linewidth=0.7)
+fig, axs = plt.subplots(1, 1, figsize=(5, 1))
+threshold = 0.05
+# 선을 세그먼트로 나누기 위한 준비
+points = np.array([np.arange(len(y)), y]).T.reshape(-1, 1, 2)
+segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+# 선의 색을 기준선 위와 아래로 나누기
+colors = ['k' if y_value >= threshold else 'k' for y_value in y[:-1]]
+
+# LineCollection을 사용해 세그먼트를 그리기
+lc = LineCollection(segments, colors=colors, linewidth=0.7)
+axs.add_collection(lc)
+axs.set_xticks([])
+axs.set_yticks([])
+axs.set_xlim([0, 1000])
+axs.set_ylim([-0.4, 0.3])
+axs.axhline(threshold, color='k', linewidth=0.7, linestyle='--')
+axs.hlines([0.25, 0.2, -0.15, -0.2, -0.25], 0, 1000, color='grey', linewidth=0.5, linestyle='--')
+
+fig.savefig(os.path.join(save_dir, 'ALGsamplek.svg'), bbox_inches='tight')
 
 time_length = len(y)
 chop_vector = np.array([0.2, 0.1, -0.1, -0.2])
 
 # Expand the mask and tensors along the second axis
-fig, ax = plt.subplots(4, 1, figsize=(3, 3))
+fig, ax = plt.subplots(4, 1, figsize=(5, 3))
 for i, chop_value in enumerate(chop_vector):
     sign_chop = ((y - chop_value)>0).astype(int)
     ax[i].plot(sign_chop, linewidth=0.7, color='k')
-for i in range(3):
+for i in range(4):
     ax[i].set_xticklabels([])
     ax[i].set_yticks([0, 1])
-ax[3].set_yticks([0, 1])
+# ax[3].set_yticks([0, 1])
 for i in range(4):
-    ax[i].set_yticklabels(['-', '+'])
+    ax[i].set_yticklabels(['–', '+'])
     ax[i].set_xlim([0, 1000])
     ax[i].set_ylim([-0.1, 1.1])
 ax[3].set_xlabel('Step')
@@ -258,6 +302,84 @@ ax[3].set_xlabel('Step')
 fig.savefig(os.path.join(save_dir, 'ALG.svg'), bbox_inches='tight')
 
 
+
+
+# %% Plot @AUG
+if generate_data:
+    Title = 'BWBN_PE_PI_DA_VelNorm'
+    id = 9
+    Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    mask_test = y_test[:, :, 1:2]
+    y_test = y_test[:, :, 0:1]
+    Xs = X_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0]
+    ys = y_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0]
+    Xs = Xs[500:4500:4]
+    ys = ys[500:4500:4]
+    np.savez(os.path.join(save_data_dir, 'SAMPSamples.npz'), X = Xs, y = ys)
+
+
+Data = np.load(os.path.join(save_data_dir, 'SAMPSamples.npz'))
+X = Data['X']
+y = Data['y']
+
+fig, axs = plt.subplots(1, 1, figsize=(5, 1.5/2))
+plt.subplots_adjust(wspace=0.5)
+axs.plot(X, 'orange', linewidth=0.7, label='Displacement')
+axs.plot(y, 'blue', linewidth=0.7, linestyle='--', label='Force')
+axs.set_xlim([0, 1000])
+axs.set_xticks([])
+axs.set_yticks([])
+axs.legend(loc='lower left', fontsize=5.5, ncol=2, bbox_to_anchor=(0.63, 1.0))
+axs.set_xlabel('Time step')
+axs.set_ylabel('Displacement / Force', fontsize=6)
+
+fig.savefig(os.path.join(save_dir, 'AUG_a.svg'), bbox_inches='tight')
+
+
+augmentation_rate = 0.7
+fig, axs = plt.subplots(3, 1, figsize=(4, 1.5*3/2))
+plt.subplots_adjust(wspace=0.5)
+augmented_idx = np.arange(len(X))
+augmented_idx = np.random.choice(augmented_idx, int(len(X) * augmentation_rate), replace=False)
+augmented_idx = np.sort(augmented_idx)
+Xp = X[augmented_idx]
+yp = y[augmented_idx]
+
+axs[0].set_xlim([0, int(1000 * augmentation_rate)])
+axs[0].plot(Xp, 'orange', linewidth=0.7)
+axs[0].plot(yp, 'blue', linewidth=0.7, linestyle='--')
+axs[0].set_xticks([])
+axs[0].set_yticks([])
+
+augmented_idx = np.arange(len(X))
+augmented_idx = np.random.choice(augmented_idx, int(len(X) * augmentation_rate), replace=False)
+augmented_idx = np.sort(augmented_idx)
+Xp = X[augmented_idx]
+yp = y[augmented_idx]
+
+axs[1].plot(Xp, 'orange', linewidth=0.7)
+axs[1].plot(yp, 'blue', linewidth=0.7, linestyle='--')
+axs[1].set_xlim([0, int(1000 * augmentation_rate)])
+axs[1].set_xticks([])
+axs[1].set_yticks([])
+axs[1].set_ylabel('Displacement / Force')
+
+augmented_idx = np.arange(len(X))
+augmented_idx = np.random.choice(augmented_idx, int(len(X) * augmentation_rate), replace=False)
+augmented_idx = np.sort(augmented_idx)
+Xp = X[augmented_idx]
+yp = y[augmented_idx]
+
+axs[2].plot(Xp, 'orange', linewidth=0.7)
+axs[2].plot(yp, 'blue', linewidth=0.7, linestyle='--')
+axs[2].set_xlim([0, int(1000 * augmentation_rate)])
+axs[2].set_xticks([])
+axs[2].set_yticks([])
+axs[2].set_xlabel(r'$f_{aug}$ $\times$ Time step')
+
+fig.savefig(os.path.join(save_dir, 'AUG_b.svg'), bbox_inches='tight')
 
 
 # %% Plot @SAMP
@@ -277,10 +399,12 @@ bins = np.linspace(-0.02, 0.02, 20)
 axs[0].hist(dX, linewidth=0.7, alpha=0.5, bins=bins)
 axs[0].set_xlim([-0.02, 0.02])
 axs[0].set_ylabel('Count')
-axs[0].text(0.5, -0.3, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].set_ylim([0, 400])
+axs[0].text(0.5, -0.3, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].hist(dXp, linewidth=0.7, alpha=0.5, bins=bins)
 axs[1].set_xlim([-0.02, 0.02])
-axs[1].text(0.5, -0.3, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[1].set_ylim([0, 400])
+axs[1].text(0.5, -0.3, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 fig.text(0.5, -0.1, 'Normalized displacement difference', ha='center')
 fig.savefig(os.path.join(save_dir, 'SAMP.svg'), bbox_inches='tight')
 
@@ -335,21 +459,22 @@ y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in
 
 fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
 plt.subplots_adjust(wspace=0.32)
-axs[0].plot(X_tests[0], y_tests[0], 'k', linewidth=0.7)
-axs[0].plot(X_tests[0], y_test_preds[0], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+idc = [1, 8, 10]
+axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[0].grid()
-axs[1].plot(X_tests[2], y_tests[2], 'k', linewidth=0.7)
-axs[1].plot(X_tests[2], y_test_preds[2], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[1].grid()
-axs[2].plot(X_tests[10], y_tests[10], 'k', linewidth=0.7)
-axs[2].plot(X_tests[10], y_test_preds[10], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].set_xlabel('Normalized displacement')
 axs[0].set_ylabel('Normalized force')
-axs[2].legend(['True', 'Predicted'], loc='lower right', fontsize=6.5)
+axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
 fig.savefig(os.path.join(save_dir, 'BWFD.svg'), bbox_inches='tight')
 
 
@@ -426,11 +551,11 @@ for jj in range(len(disps)):
     axs[jj].plot(X_test[jj], y_test[jj], 'k', linewidth=0.7)
     axs[jj].plot(X_test[jj], y_test_pred[jj], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
     axs[jj].grid()
-axs[0].text(0.5, -0.22, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[0].legend(['True', 'Model'], loc='lower right', fontsize=4.55)
-axs[1].text(0.5, -0.22, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.22, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[3].text(0.5, -0.22, '(d)', transform=axs[3].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.22, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[0].legend(['Reference', 'Model'], loc='lower right', fontsize=4.59)
+axs[1].text(0.5, -0.22, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.22, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[3].text(0.5, -0.22, '(d)', transform=axs[3].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 fig.text(0.5, -0.28, 'Normalized displacement', ha='center')
 fig.text(0.05, 0.5, 'Normalized force', va='center', rotation='vertical')
 fig.savefig(os.path.join(save_dir, 'BWCY.svg'), bbox_inches='tight')
@@ -472,29 +597,49 @@ X_tests_L = [X_tests_L[i, mask_tests_L[i].astype(int).astype(bool), 0] for i in 
 y_tests_L = [y_tests_L[i, mask_tests_L[i].astype(int).astype(bool)] for i in range(len(y_tests_L))]
 y_test_preds_L = [y_test_preds_L[i, mask_tests_L[i].astype(int).astype(bool)] for i in range(len(y_test_preds_L))]
 
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-i = 8
+fig, axs = plt.subplots(3, 3, figsize=(6, 1.8 * 3))
+idc = [1, 8, 10]
 plt.subplots_adjust(wspace=0.32)
-axs[0].plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='True')
-axs[0].plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
-axs[0].grid()
-axs[0].set_xlim([-0.12, 0.12])
-axs[0].legend(loc='lower right', fontsize=6.5)
-axs[1].plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='True')
-axs[1].plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
-axs[1].grid()
-axs[1].set_xlim([-0.12, 0.12])
-axs[1].legend(loc='lower right', fontsize=6)
-axs[2].plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='True')
-axs[2].plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
-axs[2].grid()
-axs[2].set_xlim([-0.12, 0.12])
-axs[2].legend(loc='lower right', fontsize=5.95)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('Normalized displacement')
-axs[0].set_ylabel('Normalized force')
+for col, i in enumerate(idc):
+    axs[0, col].plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='Reference')
+    axs[0, col].plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
+    axs[0, col].grid()
+
+    axs[1, col].plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='Reference')
+    axs[1, col].plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
+    axs[1, col].grid()
+
+    axs[2, col].plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='Reference')
+    axs[2, col].plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
+    axs[2, col].grid()
+
+
+axs[0, 0].legend(loc='lower right', fontsize=6.5)
+axs[1, 0].legend(loc='lower right', fontsize=6)
+axs[2, 0].legend(loc='lower right', fontsize=5.95)
+
+for row in range(0, 2):
+    axs[row, 0].set_xticklabels([])
+    axs[row, 1].set_xticklabels([])
+    axs[row, 2].set_xticklabels([])
+
+axs[2, 0].set_xlabel('Normalized displacement')
+axs[2, 1].set_xlabel('Normalized displacement')
+axs[2, 2].set_xlabel('Normalized displacement')
+axs[0, 0].set_ylabel('Normalized force')
+axs[1, 0].set_ylabel('Normalized force')
+axs[2, 0].set_ylabel('Normalized force')
+
+axs[0, 0].text(0.5, -0.05, '(a)', transform=axs[0, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[0, 1].text(0.5, -0.05, '(b)', transform=axs[0, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[0, 2].text(0.5, -0.05, '(c)', transform=axs[0, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1, 0].text(0.5, -0.05, '(d)', transform=axs[1, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1, 1].text(0.5, -0.05, '(e)', transform=axs[1, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1, 2].text(0.5, -0.05, '(f)', transform=axs[1, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2, 0].text(0.5, -0.28, '(g)', transform=axs[2, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2, 1].text(0.5, -0.28, '(h)', transform=axs[2, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2, 2].text(0.5, -0.28, '(i)', transform=axs[2, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+    
 fig.savefig(os.path.join(save_dir, 'BWBNFD.svg'), bbox_inches='tight')
 
 
@@ -535,16 +680,17 @@ r2_L = r2_score(y_tests_L, y_test_preds_L)
 x = np.linspace(0, 1, 100)
 fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
 plt.subplots_adjust(wspace=0.32)
-axs[0].scatter(y_tests_L, y_test_preds_L, color='blue', s=1, label='LSTM')
-axs[0].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_L), transform=axs[0].transAxes, fontsize=6)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].scatter(y_tests_P, y_test_preds_P, color='purple', s=1, label='PyLSTM')
-axs[1].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_P), transform=axs[1].transAxes, fontsize=6)
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].scatter(y_tests_C, y_test_preds_C, color='red', s=1, label='Proposed')
+axs[0].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_C), transform=axs[0].transAxes, fontsize=6)
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+
+axs[1].scatter(y_tests_L, y_test_preds_L, color='blue', s=1, label='LSTM')
+axs[1].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_L), transform=axs[1].transAxes, fontsize=6)
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].scatter(y_tests_P, y_test_preds_P, color='purple', s=1, label='PyLSTM')
+axs[2].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_P), transform=axs[2].transAxes, fontsize=6)
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].set_xlabel('True normalized peak')
-axs[2].scatter(y_tests_C, y_test_preds_C, color='red', s=1, label='Proposed')
-axs[2].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_C), transform=axs[2].transAxes, fontsize=6)
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
 for i in range(3):
     axs[i].plot(x, x, 'k', linewidth=0.7, label='y=x')
     axs[i].set_xlim([0, 0.76])
@@ -616,7 +762,7 @@ ax.set_ylim([0, 1.0])
 ax.grid(True, axis='y')
 for bar in bars:
     yval = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width() / 2, yval + 0.01, '{:.2e}'.format(yval), ha='center', va='bottom')
+    ax.text(bar.get_x() + bar.get_width() / 2, yval + 0.01, '{:.3f}'.format(yval), ha='center', va='bottom')
 fig.savefig(os.path.join(save_dir, 'BWBNPI.svg'), bbox_inches='tight')
 # ax.set_yscale('log')
 
@@ -640,21 +786,22 @@ y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in
 
 fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
 plt.subplots_adjust(wspace=0.32)
-axs[0].plot(X_tests[0], y_tests[0], 'k', linewidth=0.7)
-axs[0].plot(X_tests[0], y_test_preds[0], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+idc = [1, 8, 10]
+axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[0].grid()
-axs[1].plot(X_tests[2], y_tests[2], 'k', linewidth=0.7)
-axs[1].plot(X_tests[2], y_test_preds[2], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[1].grid()
-axs[2].plot(X_tests[10], y_tests[10], 'k', linewidth=0.7)
-axs[2].plot(X_tests[10], y_test_preds[10], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].set_xlabel('Normalized displacement')
 axs[0].set_ylabel('Normalized force')
-axs[2].legend(['True', 'Predicted'], loc='lower right', fontsize=6.5)
+axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
 fig.savefig(os.path.join(save_dir, 'BIFD.svg'), bbox_inches='tight')
 
 
@@ -668,24 +815,30 @@ X_tests = [X_tests[i, mask_tests[i].astype(int).astype(bool), 0] for i in range(
 y_tests = [y_tests[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_tests))]
 y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_test_preds))]
 
-fig, axs = plt.subplots(2, 1, figsize=(6, 3))
+fig, axs = plt.subplots(3, 1, figsize=(6, 1.8 * 3))
 plt.subplots_adjust(hspace=0.4)
-ids = [2, 1]
+idc = [1, 8, 10]
 dt = 0.005
-t0 = np.arange(0, len(y_tests[ids[0]]) * dt, dt)
-t1 = np.arange(0, len(y_tests[ids[1]]) * dt, dt)
-axs[0].plot(t0, y_tests[ids[0]], 'k', linewidth=0.7, label='True')
-axs[0].plot(t0, y_test_preds[ids[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Predicted')
+t0 = np.arange(0, len(y_tests[idc[0]]) * dt, dt)
+t1 = np.arange(0, len(y_tests[idc[1]]) * dt, dt)
+t2 = np.arange(0, len(y_tests[idc[2]]) * dt, dt)
+axs[0].plot(t0, y_tests[idc[0]], 'k', linewidth=0.7, label='Reference')
+axs[0].plot(t0, y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Predicted')
 axs[0].set_xlim([t0[0], t0[-1]])
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[0].grid()
 axs[0].legend(loc='upper left', fontsize=6)
-axs[1].plot(t1, y_tests[ids[1]], 'k', linewidth=0.7)
-axs[1].plot(t1, y_test_preds[ids[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[1].plot(t1, y_tests[idc[1]], 'k', linewidth=0.7)
+axs[1].plot(t1, y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[1].set_xlim([t1[0], t1[-1]])
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].grid()
-fig.text(0.5, -0.05, 'Time [s]', ha='center', fontsize=8)
+axs[2].plot(t2, y_tests[idc[2]], 'k', linewidth=0.7)
+axs[2].plot(t2, y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[2].set_xlim([t2[0], t2[-1]])
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].grid()
+fig.text(0.5, -0.005, 'Time [s]', ha='center', fontsize=8)
 fig.text(0.04, 0.5, 'Normalized force', va='center', rotation='vertical', fontsize=8)
 fig.savefig(os.path.join(save_dir, 'BITH.svg'), bbox_inches='tight')
 
@@ -711,27 +864,28 @@ y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in
 
 fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
 plt.subplots_adjust(wspace=0.32)
-axs[0].plot(X_tests[0], y_tests[0], 'k', linewidth=0.7)
-axs[0].plot(X_tests[0], y_test_preds[0], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+idc = [18, 12, 2]
+axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[0].grid()
-axs[1].plot(X_tests[2], y_tests[2], 'k', linewidth=0.7)
-axs[1].plot(X_tests[2], y_test_preds[2], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[1].grid()
-axs[2].plot(X_tests[10], y_tests[10], 'k', linewidth=0.7)
-axs[2].plot(X_tests[10], y_test_preds[10], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
 axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].set_xlabel('Normalized displacement')
 axs[0].set_ylabel('Normalized force')
-axs[2].legend(['True', 'Predicted'], loc='lower right', fontsize=6.5)
+axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
 fig.savefig(os.path.join(save_dir, 'ROFD.svg'), bbox_inches='tight')
 
 
 
 # %% RODY
-idc = [42, 43, 48]
+idc = [58, 52, 42]
 test_paths = ['ResultAnalysis_for_paper/WCEE2024/Data/RO_PE_PI_DA2_{}.npz'.format(id) for id in idc]
 test_datas = [np.load(test_path) for test_path in test_paths]
 
@@ -748,11 +902,11 @@ for i, test_data in enumerate(test_datas):
     axs[i].plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
     axs[i].set_xlim([0, t_ref[-1]])
     axs[i].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-axs[0].legend(['True', 'Predicted'], loc='upper left', fontsize=6.5)
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs[1].legend(['Reference', 'Predicted'], loc='upper left', fontsize=6.5, ncol=2)
+axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 axs[1].set_ylabel('Displacement [m]')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 fig.text(0.5, -0.01, 'Time [s]', ha='center', fontsize=8)
 fig.savefig(os.path.join(save_dir, 'RODY.svg'), bbox_inches='tight')
 
