@@ -170,23 +170,25 @@ if generate_data:
 Data = np.load(os.path.join(save_data_dir, 'BWSamples.npz'))
 BW_X, BW_y, BWBN_X, BWBN_y = Data['BW_X'], Data['BW_y'], Data['BWBN_X'], Data['BWBN_y']
 BW_X, BW_y = BW_X[:20000], BW_y[:20000]
-fig, axs = plt.subplots(1, 2, figsize=(6, 2.2))
-plt.subplots_adjust(wspace=0.5)
-axs[0].plot(BW_X, BW_y, 'k', linewidth=0.4)
-axs[0].set_xlabel('Displacement')
-axs[0].set_ylabel('Force')
-axs[0].set_xticks([])
-axs[0].set_yticks([])
+fig, axs = plt.subplots(1, 1, figsize=(2.5, 2.2))
+axs.plot(BW_X, BW_y, 'k', linewidth=0.4)
+axs.set_xlabel('Displacement')
+axs.set_ylabel('Force')
+axs.set_xticks([])
+axs.set_yticks([])
 # axs[0].grid()
-axs[1].plot(BWBN_X, BWBN_y, 'k', linewidth=0.4)
-axs[1].set_xlabel('Displacement')
-axs[1].set_ylabel('Force')
-axs[1].set_xticks([])
-axs[1].set_yticks([])
+fig.savefig(os.path.join(save_dir, 'BW_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(2.5, 2.2))
+axs.plot(BWBN_X, BWBN_y, 'k', linewidth=0.4)
+axs.set_xlabel('Displacement')
+axs.set_ylabel('Force')
+axs.set_xticks([])
+axs.set_yticks([])
 # axs[1].grid()
-axs[0].text(0.5, -0.2, '(a)', transform=axs[0].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
-fig.savefig(os.path.join(save_dir, 'BW.svg'), bbox_inches='tight')
+# axs[0].text(0.5, -0.2, '(a)', transform=axs[0].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
+fig.savefig(os.path.join(save_dir, 'BW_b.svg'), bbox_inches='tight')
 
 
 
@@ -393,20 +395,27 @@ augmented_idx = np.sort(augmented_idx)
 Xp = X[augmented_idx]
 dXp = np.diff(Xp)
 
-fig, axs = plt.subplots(1, 2, figsize=(4, 1.5))
+fig, axs = plt.subplots(1, 1, figsize=(2, 1.5))
 plt.subplots_adjust(wspace=0.5)
 bins = np.linspace(-0.02, 0.02, 20)
-axs[0].hist(dX, linewidth=0.7, alpha=0.5, bins=bins)
-axs[0].set_xlim([-0.02, 0.02])
-axs[0].set_ylabel('Count')
-axs[0].set_ylim([0, 400])
-axs[0].text(0.5, -0.3, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].hist(dXp, linewidth=0.7, alpha=0.5, bins=bins)
-axs[1].set_xlim([-0.02, 0.02])
-axs[1].set_ylim([0, 400])
-axs[1].text(0.5, -0.3, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-fig.text(0.5, -0.1, 'Normalized displacement difference', ha='center')
-fig.savefig(os.path.join(save_dir, 'SAMP.svg'), bbox_inches='tight')
+axs.hist(dX, linewidth=0.7, alpha=0.5, bins=bins)
+axs.set_xlim([-0.02, 0.02])
+axs.set_ylabel('Count')
+axs.set_ylim([0, 400])
+axs.set_xlabel(r'Normalized $\Delta u$')
+fig.savefig(os.path.join(save_dir, 'SAMP_a.svg'), bbox_inches='tight')
+
+# axs.text(0.5, -0.3, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+
+fig, axs = plt.subplots(1, 1, figsize=(2, 1.5))
+axs.hist(dXp, linewidth=0.7, alpha=0.5, bins=bins)
+axs.set_xlim([-0.02, 0.02])
+axs.set_ylim([0, 400])
+axs.set_ylabel('Count')
+axs.set_xlabel(r'Normalized $\Delta u$')
+# axs[1].text(0.5, -0.3, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# fig.text(0.5, -0.1, 'Normalized displacement difference', ha='center')
+fig.savefig(os.path.join(save_dir, 'SAMP_b.svg'), bbox_inches='tight')
 
 
 
@@ -457,25 +466,39 @@ X_tests = [X_tests[i, mask_tests[i].astype(int).astype(bool), 0] for i in range(
 y_tests = [y_tests[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_tests))]
 y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_test_preds))]
 
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+# plt.subplots_adjust(wspace=0.32)
 idc = [1, 8, 10]
-axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
-axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[0].grid()
-axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
-axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[1].grid()
-axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
-axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('Normalized displacement')
-axs[0].set_ylabel('Normalized force')
-axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
-fig.savefig(os.path.join(save_dir, 'BWFD.svg'), bbox_inches='tight')
+axs.plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_ylabel('Normalized $f$')
+axs.set_xlabel('Normalized $u$')
+axs.legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+fig.savefig(os.path.join(save_dir, 'BWFD_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'BWFD_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'BWFD_c.svg'), bbox_inches='tight')
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+
+
+# axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+# fig.savefig(os.path.join(save_dir, 'BWFD.svg'), bbox_inches='tight')
 
 
 # %% BW Loss
@@ -544,21 +567,47 @@ X_test = [X_test[i, mask_test[i].astype(int).astype(bool), 0] for i in range(len
 y_test = [y_test[i, mask_test[i].astype(int).astype(bool)] for i in range(len(y_test))]
 y_test_pred = [y_test_pred[i, mask_test[i].astype(int).astype(bool)] for i in range(len(y_test_pred))]              
 
-fig, axs = plt.subplots(1, 4, figsize=(6, 1.3))
-plt.subplots_adjust(wspace=0.5, hspace=0.5)
+fig, axs = plt.subplots(1, 1, figsize=(1.3, 1.3))
+# plt.subplots_adjust(wspace=0.5, hspace=0.5)
+axs.plot(X_test[0], y_test[0], 'k', linewidth=0.7)
+axs.plot(X_test[0], y_test_pred[0], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+axs.legend(['Reference', 'Model'], loc='lower right', fontsize=4.59)
+fig.savefig(os.path.join(save_dir, 'BWCY_a.svg'), bbox_inches='tight')
 
-for jj in range(len(disps)):
-    axs[jj].plot(X_test[jj], y_test[jj], 'k', linewidth=0.7)
-    axs[jj].plot(X_test[jj], y_test_pred[jj], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-    axs[jj].grid()
-axs[0].text(0.5, -0.22, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[0].legend(['Reference', 'Model'], loc='lower right', fontsize=4.59)
-axs[1].text(0.5, -0.22, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.22, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[3].text(0.5, -0.22, '(d)', transform=axs[3].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-fig.text(0.5, -0.28, 'Normalized displacement', ha='center')
-fig.text(0.05, 0.5, 'Normalized force', va='center', rotation='vertical')
-fig.savefig(os.path.join(save_dir, 'BWCY.svg'), bbox_inches='tight')
+fig, axs = plt.subplots(1, 1, figsize=(1.3, 1.3))
+axs.plot(X_test[1], y_test[1], 'k', linewidth=0.7)
+axs.plot(X_test[1], y_test_pred[1], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+axs.grid()
+fig.savefig(os.path.join(save_dir, 'BWCY_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.3, 1.3))
+axs.plot(X_test[2], y_test[2], 'k', linewidth=0.7)
+axs.plot(X_test[2], y_test_pred[2], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'BWCY_c.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.3, 1.3))
+axs.plot(X_test[3], y_test[3], 'k', linewidth=0.7)
+axs.plot(X_test[3], y_test_pred[3], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'BWCY_d.svg'), bbox_inches='tight')
+
+
+# axs[1].text(0.5, -0.22, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.22, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[3].text(0.5, -0.22, '(d)', transform=axs[3].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# fig.text(0.5, -0.28, 'Normalized displacement', ha='center')
+# fig.text(0.05, 0.5, 'Normalized force', va='center', rotation='vertical')
+# fig.savefig(os.path.join(save_dir, 'BWCY.svg'), bbox_inches='tight')
 
 
 # %% BWBNFD
@@ -597,50 +646,118 @@ X_tests_L = [X_tests_L[i, mask_tests_L[i].astype(int).astype(bool), 0] for i in 
 y_tests_L = [y_tests_L[i, mask_tests_L[i].astype(int).astype(bool)] for i in range(len(y_tests_L))]
 y_test_preds_L = [y_test_preds_L[i, mask_tests_L[i].astype(int).astype(bool)] for i in range(len(y_test_preds_L))]
 
-fig, axs = plt.subplots(3, 3, figsize=(6, 1.8 * 3))
+fig1, axs1 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig3, axs3 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+
 idc = [1, 8, 10]
-plt.subplots_adjust(wspace=0.32)
-for col, i in enumerate(idc):
-    axs[0, col].plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='Reference')
-    axs[0, col].plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
-    axs[0, col].grid()
+i = idc[0]
+axs1.plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='Reference')
+axs1.plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
+axs1.set_xlabel('Normalized $u$')
+axs1.set_ylabel('Normalized $f$')
+axs1.grid()
+axs1.legend(loc='lower right', fontsize=6.5)
+fig1.savefig(os.path.join(save_dir, 'BWBNFD_a.svg'), bbox_inches='tight')
 
-    axs[1, col].plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='Reference')
-    axs[1, col].plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
-    axs[1, col].grid()
+axs2.plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='Reference')
+axs2.plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
+axs2.set_xlabel('Normalized $u$')
+axs2.set_ylabel('Normalized $f$')
+axs2.grid()
+axs2.legend(loc='lower right', fontsize=6)
+fig2.savefig(os.path.join(save_dir, 'BWBNFD_d.svg'), bbox_inches='tight')
 
-    axs[2, col].plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='Reference')
-    axs[2, col].plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
-    axs[2, col].grid()
+axs3.plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='Reference')
+axs3.plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
+axs3.set_xlabel('Normalized $u$')
+axs3.set_ylabel('Normalized $f$')
+axs3.grid()
+axs3.legend(loc='lower right', fontsize=5.95)
+fig3.savefig(os.path.join(save_dir, 'BWBNFD_g.svg'), bbox_inches='tight')
+
+fig1, axs1 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig3, axs3 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+
+idc = [1, 8, 10]
+i = idc[1]
+axs1.plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='Reference')
+axs1.plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
+axs1.set_xlabel('Normalized $u$')
+axs1.set_ylabel('Normalized $f$')
+axs1.grid()
+fig1.savefig(os.path.join(save_dir, 'BWBNFD_b.svg'), bbox_inches='tight')
+
+axs2.plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='Reference')
+axs2.plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
+axs2.set_xlabel('Normalized $u$')
+axs2.set_ylabel('Normalized $f$')
+axs2.grid()
+fig2.savefig(os.path.join(save_dir, 'BWBNFD_e.svg'), bbox_inches='tight')
+
+axs3.plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='Reference')
+axs3.plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
+axs3.set_xlabel('Normalized $u$')
+axs3.set_ylabel('Normalized $f$')
+axs3.grid()
+fig3.savefig(os.path.join(save_dir, 'BWBNFD_h.svg'), bbox_inches='tight')
 
 
-axs[0, 0].legend(loc='lower right', fontsize=6.5)
-axs[1, 0].legend(loc='lower right', fontsize=6)
-axs[2, 0].legend(loc='lower right', fontsize=5.95)
+fig1, axs1 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.8, 1.8))
+fig3, axs3 = plt.subplots(1, 1, figsize=(1.8, 1.8))
 
-for row in range(0, 2):
-    axs[row, 0].set_xticklabels([])
-    axs[row, 1].set_xticklabels([])
-    axs[row, 2].set_xticklabels([])
+idc = [1, 8, 10]
+i = idc[2]
+axs1.plot(X_tests_C[i], y_tests_C[i], 'k', linewidth=0.7, label='Reference')
+axs1.plot(X_tests_C[i], y_test_preds_C[i], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Proposed')
+axs1.set_xlabel('Normalized $u$')
+axs1.set_ylabel('Normalized $f$')
+axs1.grid()
+fig1.savefig(os.path.join(save_dir, 'BWBNFD_c.svg'), bbox_inches='tight')
 
-axs[2, 0].set_xlabel('Normalized displacement')
-axs[2, 1].set_xlabel('Normalized displacement')
-axs[2, 2].set_xlabel('Normalized displacement')
-axs[0, 0].set_ylabel('Normalized force')
-axs[1, 0].set_ylabel('Normalized force')
-axs[2, 0].set_ylabel('Normalized force')
+axs2.plot(X_tests_L[i], y_tests_L[i], 'k', linewidth=0.7, label='Reference')
+axs2.plot(X_tests_L[i], y_test_preds_L[i], 'b', linewidth=0.7, linestyle='--', alpha=0.7, label='LSTM')
+axs2.set_xlabel('Normalized $u$')
+axs2.set_ylabel('Normalized $f$')
+axs2.grid()
+fig2.savefig(os.path.join(save_dir, 'BWBNFD_f.svg'), bbox_inches='tight')
 
-axs[0, 0].text(0.5, -0.05, '(a)', transform=axs[0, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[0, 1].text(0.5, -0.05, '(b)', transform=axs[0, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[0, 2].text(0.5, -0.05, '(c)', transform=axs[0, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1, 0].text(0.5, -0.05, '(d)', transform=axs[1, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1, 1].text(0.5, -0.05, '(e)', transform=axs[1, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1, 2].text(0.5, -0.05, '(f)', transform=axs[1, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2, 0].text(0.5, -0.28, '(g)', transform=axs[2, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2, 1].text(0.5, -0.28, '(h)', transform=axs[2, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2, 2].text(0.5, -0.28, '(i)', transform=axs[2, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs3.plot(X_tests_P[i], y_tests_P[i], 'k', linewidth=0.7, label='Reference')
+axs3.plot(X_tests_P[i], y_test_preds_P[i], 'purple', linewidth=0.7, linestyle='--', alpha=0.7, label='PyLSTM')
+axs3.set_xlabel('Normalized $u$')
+axs3.set_ylabel('Normalized $f$')
+axs3.grid()
+fig3.savefig(os.path.join(save_dir, 'BWBNFD_i.svg'), bbox_inches='tight')
+
+# axs[0, 0].legend(loc='lower right', fontsize=6.5)
+# axs[1, 0].legend(loc='lower right', fontsize=6)
+# axs[2, 0].legend(loc='lower right', fontsize=5.95)
+
+# for row in range(0, 2):
+#     axs[row, 0].set_xticklabels([])
+#     axs[row, 1].set_xticklabels([])
+#     axs[row, 2].set_xticklabels([])
+
+# axs[2, 0].set_xlabel('Normalized displacement')
+# axs[2, 1].set_xlabel('Normalized displacement')
+# axs[2, 2].set_xlabel('Normalized displacement')
+# axs[0, 0].set_ylabel('Normalized force')
+# axs[1, 0].set_ylabel('Normalized force')
+# axs[2, 0].set_ylabel('Normalized force')
+
+# axs[0, 0].text(0.5, -0.05, '(a)', transform=axs[0, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[0, 1].text(0.5, -0.05, '(b)', transform=axs[0, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[0, 2].text(0.5, -0.05, '(c)', transform=axs[0, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1, 0].text(0.5, -0.05, '(d)', transform=axs[1, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1, 1].text(0.5, -0.05, '(e)', transform=axs[1, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1, 2].text(0.5, -0.05, '(f)', transform=axs[1, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2, 0].text(0.5, -0.28, '(g)', transform=axs[2, 0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2, 1].text(0.5, -0.28, '(h)', transform=axs[2, 1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2, 2].text(0.5, -0.28, '(i)', transform=axs[2, 2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
     
-fig.savefig(os.path.join(save_dir, 'BWBNFD.svg'), bbox_inches='tight')
+# fig.savefig(os.path.join(save_dir, 'BWBNFD.svg'), bbox_inches='tight')
 
 
 
@@ -678,28 +795,65 @@ y_test_preds_L = [np.abs(y_test_pred_L).max() for y_test_pred_L in y_test_preds_
 r2_L = r2_score(y_tests_L, y_test_preds_L)
 
 x = np.linspace(0, 1, 100)
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
-axs[0].scatter(y_tests_C, y_test_preds_C, color='red', s=1, label='Proposed')
-axs[0].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_C), transform=axs[0].transAxes, fontsize=6)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.scatter(y_tests_C, y_test_preds_C, color='red', s=1, label='Proposed')
+axs.text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_C), transform=axs.transAxes, fontsize=6)
+axs.set_xlim([0, 0.76])
+axs.set_ylim([0, 0.76])
+axs.plot(x, x, 'k', linewidth=0.7, label='y=x')
+axs.grid()
+axs.set_xlabel('True normalized peak')
+axs.set_ylabel('Predicted normalized peak')
+axs.legend(loc='upper left', fontsize=6)
 
-axs[1].scatter(y_tests_L, y_test_preds_L, color='blue', s=1, label='LSTM')
-axs[1].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_L), transform=axs[1].transAxes, fontsize=6)
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].scatter(y_tests_P, y_test_preds_P, color='purple', s=1, label='PyLSTM')
-axs[2].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_P), transform=axs[2].transAxes, fontsize=6)
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('True normalized peak')
-for i in range(3):
-    axs[i].plot(x, x, 'k', linewidth=0.7, label='y=x')
-    axs[i].set_xlim([0, 0.76])
-    axs[i].set_ylim([0, 0.76])
-    axs[i].grid()
-    axs[i].legend(loc='upper left', fontsize=6)
+fig.savefig(os.path.join(save_dir, 'BWBNPK_a.svg'), bbox_inches='tight')
 
-axs[0].set_ylabel('Predicted normalized peak')
-fig.savefig(os.path.join(save_dir, 'BWBNPK.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.scatter(y_tests_L, y_test_preds_L, color='blue', s=1, label='LSTM')
+axs.text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_L), transform=axs.transAxes, fontsize=6)
+axs.set_xlim([0, 0.76])
+axs.set_ylim([0, 0.76])
+axs.plot(x, x, 'k', linewidth=0.7, label='y=x')
+axs.grid()
+axs.set_xlabel('True normalized peak')
+axs.set_ylabel('Predicted normalized peak')
+axs.legend(loc='upper left', fontsize=6)
+
+fig.savefig(os.path.join(save_dir, 'BWBNPK_b.svg'), bbox_inches='tight')
+
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.scatter(y_tests_P, y_test_preds_P, color='purple', s=1, label='PyLSTM')
+axs.text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_P), transform=axs.transAxes, fontsize=6)
+axs.set_xlim([0, 0.76])
+axs.set_ylim([0, 0.76])
+axs.plot(x, x, 'k', linewidth=0.7, label='y=x')
+axs.grid()
+axs.set_xlabel('True normalized peak')
+axs.set_ylabel('Predicted normalized peak')
+axs.legend(loc='upper left', fontsize=6)
+
+fig.savefig(os.path.join(save_dir, 'BWBNPK_c.svg'), bbox_inches='tight')
+
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+
+# axs[1].scatter(y_tests_L, y_test_preds_L, color='blue', s=1, label='LSTM')
+# axs[1].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_L), transform=axs[1].transAxes, fontsize=6)
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].scatter(y_tests_P, y_test_preds_P, color='purple', s=1, label='PyLSTM')
+# axs[2].text(0.6, 0.1, 'R$^2$ = {:.2f}'.format(r2_P), transform=axs[2].transAxes, fontsize=6)
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].set_xlabel('True normalized peak')
+# for i in range(3):
+#     axs[i].plot(x, x, 'k', linewidth=0.7, label='y=x')
+#     axs[i].set_xlim([0, 0.76])
+#     axs[i].set_ylim([0, 0.76])
+#     axs[i].grid()
+#     axs[i].legend(loc='upper left', fontsize=6)
+
+# axs[0].set_ylabel('Predicted normalized peak')
+# fig.savefig(os.path.join(save_dir, 'BWBNPK.svg'), bbox_inches='tight')
 
 
 
@@ -784,25 +938,41 @@ X_tests = [X_tests[i, mask_tests[i].astype(int).astype(bool), 0] for i in range(
 y_tests = [y_tests[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_tests))]
 y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_test_preds))]
 
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
 idc = [1, 8, 10]
-axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
-axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[0].grid()
-axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
-axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[1].grid()
-axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
-axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('Normalized displacement')
-axs[0].set_ylabel('Normalized force')
-axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
-fig.savefig(os.path.join(save_dir, 'BIFD.svg'), bbox_inches='tight')
+axs.plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+axs.legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+
+fig.savefig(os.path.join(save_dir, 'BIFD_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'BIFD_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'BIFD_c.svg'), bbox_inches='tight')
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].set_xlabel('Normalized displacement')
+# axs[0].set_ylabel('Normalized force')
+# axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+# fig.savefig(os.path.join(save_dir, 'BIFD.svg'), bbox_inches='tight')
 
 
 # %% BITH
@@ -815,32 +985,58 @@ X_tests = [X_tests[i, mask_tests[i].astype(int).astype(bool), 0] for i in range(
 y_tests = [y_tests[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_tests))]
 y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_test_preds))]
 
-fig, axs = plt.subplots(3, 1, figsize=(6, 1.8 * 3))
-plt.subplots_adjust(hspace=0.4)
+
+# plt.subplots_adjust(hspace=0.4)
 idc = [1, 8, 10]
 dt = 0.005
 t0 = np.arange(0, len(y_tests[idc[0]]) * dt, dt)
 t1 = np.arange(0, len(y_tests[idc[1]]) * dt, dt)
 t2 = np.arange(0, len(y_tests[idc[2]]) * dt, dt)
-axs[0].plot(t0, y_tests[idc[0]], 'k', linewidth=0.7, label='Reference')
-axs[0].plot(t0, y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Predicted')
-axs[0].set_xlim([t0[0], t0[-1]])
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[0].grid()
-axs[0].legend(loc='upper left', fontsize=6)
-axs[1].plot(t1, y_tests[idc[1]], 'k', linewidth=0.7)
-axs[1].plot(t1, y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[1].set_xlim([t1[0], t1[-1]])
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].grid()
-axs[2].plot(t2, y_tests[idc[2]], 'k', linewidth=0.7)
-axs[2].plot(t2, y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[2].set_xlim([t2[0], t2[-1]])
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].grid()
-fig.text(0.5, -0.005, 'Time [s]', ha='center', fontsize=8)
-fig.text(0.04, 0.5, 'Normalized force', va='center', rotation='vertical', fontsize=8)
-fig.savefig(os.path.join(save_dir, 'BITH.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(6, 1.4))
+axs.plot(t0, y_tests[idc[0]], 'k', linewidth=0.7, label='Reference')
+axs.plot(t0, y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Predicted')
+axs.set_xlim([t0[0], t0[-1]])
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+axs.grid()
+axs.legend(loc='upper left', fontsize=6)
+axs.set_xlabel('Time [s]')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'BITH_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(6, 1.4))
+axs.plot(t1, y_tests[idc[1]], 'k', linewidth=0.7)
+axs.plot(t1, y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.set_xlim([t1[0], t1[-1]])
+axs.grid()
+axs.set_xlabel('Time [s]')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'BITH_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(6, 1.4))
+axs.plot(t2, y_tests[idc[2]], 'k', linewidth=0.7)
+axs.plot(t2, y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.set_xlim([t2[0], t2[-1]])
+axs.grid()
+axs.set_xlabel('Time [s]')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'BITH_c.svg'), bbox_inches='tight')
+# axs[1].plot(t1, y_tests[idc[1]], 'k', linewidth=0.7)
+# axs[1].plot(t1, y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+# axs[1].set_xlim([t1[0], t1[-1]])
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].grid()
+# axs[2].plot(t2, y_tests[idc[2]], 'k', linewidth=0.7)
+# axs[2].plot(t2, y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+# axs[2].set_xlim([t2[0], t2[-1]])
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].grid()
+# fig.text(0.5, -0.005, 'Time [s]', ha='center', fontsize=8)
+# fig.text(0.04, 0.5, 'Normalized force', va='center', rotation='vertical', fontsize=8)
+# fig.savefig(os.path.join(save_dir, 'BITH.svg'), bbox_inches='tight')
 
 
 
@@ -862,25 +1058,42 @@ X_tests = [X_tests[i, mask_tests[i].astype(int).astype(bool), 0] for i in range(
 y_tests = [y_tests[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_tests))]
 y_test_preds = [y_test_preds[i, mask_tests[i].astype(int).astype(bool)] for i in range(len(y_test_preds))]
 
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
 idc = [18, 12, 2]
-axs[0].plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
-axs[0].plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[0].grid()
-axs[1].plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
-axs[1].plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[1].grid()
-axs[2].plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
-axs[2].plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-axs[2].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('Normalized displacement')
-axs[0].set_ylabel('Normalized force')
-axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
-fig.savefig(os.path.join(save_dir, 'ROFD.svg'), bbox_inches='tight')
+axs.plot(X_tests[idc[0]], y_tests[idc[0]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[0]], y_test_preds[idc[0]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+axs.legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+
+fig.savefig(os.path.join(save_dir, 'ROFD_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[1]], y_tests[idc[1]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[1]], y_test_preds[idc[1]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'ROFD_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_tests[idc[2]], y_tests[idc[2]], 'k', linewidth=0.7)
+axs.plot(X_tests[idc[2]], y_test_preds[idc[2]], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+
+fig.savefig(os.path.join(save_dir, 'ROFD_c.svg'), bbox_inches='tight')
+
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].set_xlabel('Normalized displacement')
+# axs[0].set_ylabel('Normalized force')
+# axs[0].legend(['Reference', 'Predicted'], loc='lower right', fontsize=6.5)
+# fig.savefig(os.path.join(save_dir, 'ROFD.svg'), bbox_inches='tight')
 
 
 
