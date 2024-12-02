@@ -51,23 +51,50 @@ for i in range(3):
     forces.append(Data['train_forces'])
     BW_forces.append(Data['BW_force'])
 
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
-for i in range(3):
-    axs[i].plot(disps[i]*711.2, forces[i], 'k', linewidth=0.7, label='Reference')
-    axs[i].plot(disps[i]*711.2, BW_forces[i], 'orange', linewidth=0.7, linestyle='--', alpha=0.8, label='BW')
-    axs[i].grid()
-    # axs[i].set_xlim([-0.12, 0.12])
-    # axs[i].set_ylim([-1.2, 1.2])
-    # axs[i].text(0.5, -0.25, '({})'.format(chr(97+i)), transform=axs[i].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
-    axs[i].set_xlabel('Displacement [mm]')
-axs[0].set_ylim([-750, 982])
-axs[0].set_ylabel('Force [kN]')
-axs[0].legend(loc='upper left', fontsize=5.5, ncol=2)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-fig.savefig(os.path.join(save_dir, 'LIRAND.svg'), bbox_inches='tight')
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+# plt.subplots_adjust(wspace=0.32)
+axs.plot(disps[0]*711.2, forces[0], 'k', linewidth=0.7, label='Reference')
+axs.plot(disps[0]*711.2, BW_forces[0], 'orange', linewidth=0.7, linestyle='--', alpha=0.8, label='BW')
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+axs.set_ylim([-750, 982])
+axs.legend(loc='upper left', fontsize=5.5, ncol=2)
+
+fig.savefig(os.path.join(save_dir, 'LIRAND_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[1]*711.2, forces[1], 'k', linewidth=0.7)
+axs.plot(disps[1]*711.2, BW_forces[1], 'orange', linewidth=0.7, linestyle='--', alpha=0.8)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRAND_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[2]*711.2, forces[2], 'k', linewidth=0.7)
+axs.plot(disps[2]*711.2, BW_forces[2], 'orange', linewidth=0.7, linestyle='--', alpha=0.8)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRAND_c.svg'), bbox_inches='tight')
+# for i in range(3):
+#     axs[i].plot(disps[i]*711.2, forces[i], 'k', linewidth=0.7, label='Reference')
+#     axs[i].plot(disps[i]*711.2, BW_forces[i], 'orange', linewidth=0.7, linestyle='--', alpha=0.8, label='BW')
+#     axs[i].grid()
+#     # axs[i].set_xlim([-0.12, 0.12])
+#     # axs[i].set_ylim([-1.2, 1.2])
+#     # axs[i].text(0.5, -0.25, '({})'.format(chr(97+i)), transform=axs[i].transAxes, fontsize=10, fontweight='bold', va='top', ha='center')
+#     axs[i].set_xlabel('Displacement [mm]')
+# axs[0].set_ylim([-750, 982])
+# axs[0].set_ylabel('Force [kN]')
+# axs[0].legend(loc='upper left', fontsize=5.5, ncol=2)
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# fig.savefig(os.path.join(save_dir, 'LIRAND.svg'), bbox_inches='tight')
 
 
 
@@ -80,37 +107,61 @@ BW_force = Data['BW_force']
 pretrained_force = Data['pretrained_force']
 trained_force = Data['trained_force']
 
-fig, axs = plt.subplots(1, 2, figsize=(4, 1.8))
-plt.subplots_adjust(wspace=0.32)
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+# plt.subplots_adjust(wspace=0.32)
+line1, = axs.plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
+line2, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
+line3, = axs.plot(disp*711.2, pretrained_force, 'blue', linewidth=0.7, linestyle=':', alpha=0.7, label='Pretrained')
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
 
-# 첫 번째 서브플롯 (axs[0])
-line1, = axs[0].plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
-line2, = axs[0].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
-line3, = axs[0].plot(disp*711.2, pretrained_force, 'blue', linewidth=0.7, linestyle='--', alpha=0.7, label='Pretrained')
-axs[0].grid()
-axs[0].set_xlabel('Displacement [mm]')
-axs[0].set_ylabel('Force [kN]')
+fig.savefig(os.path.join(save_dir, 'LICYC_a.svg'), bbox_inches='tight')
 
-# 두 번째 서브플롯 (axs[1])
-line4, = axs[1].plot(disp*711.2, force, 'k', linewidth=0.7)
-line5, = axs[1].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
-line6, = axs[1].plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Trained')
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+line4, = axs.plot(disp*711.2, force, 'k', linewidth=0.7)
+line5, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
+line6, = axs.plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle=':', alpha=0.7, label='Trained')
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
 
-axs[1].grid()
-axs[1].set_xlabel('Displacement [mm]')
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-# Figure 전체에 대한 legend 추가
+fig.savefig(os.path.join(save_dir, 'LICYC_b.svg'), bbox_inches='tight')
+
+
+fig, axs = plt.subplots(1, 1, figsize=(4, 1.8))
 fig.legend([line1, line2, line3, line6], ['Reference', 'BW', 'Pretrained', 'Trained'], 
-           loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.565, 1.0))
+           loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.5, 1.0))
+fig.savefig(os.path.join(save_dir, 'LICYC_legend.svg'), bbox_inches='tight')
 
-fig.savefig(os.path.join(save_dir, 'LICYC.svg'), bbox_inches='tight')
+# # 첫 번째 서브플롯 (axs[0])
+# line1, = axs[0].plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
+# line2, = axs[0].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
+# line3, = axs[0].plot(disp*711.2, pretrained_force, 'blue', linewidth=0.7, linestyle=':', alpha=0.7, label='Pretrained')
+# axs[0].grid()
+# axs[0].set_xlabel('Displacement [mm]')
+# axs[0].set_ylabel('Force [kN]')
 
-MSE_BW = np.sum((force - BW_force) ** 2) / len(force)
-MSE_trained = np.sum((force - trained_force) ** 2) / len(force)
-print('MSE_BW: {:.4e}'.format(MSE_BW))
-print('MSE_trained: {:.4e}'.format(MSE_trained))
-print('Ratio: {:.4f}'.format(MSE_trained / MSE_BW))
+# # 두 번째 서브플롯 (axs[1])
+# line4, = axs[1].plot(disp*711.2, force, 'k', linewidth=0.7)
+# line5, = axs[1].plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
+# line6, = axs[1].plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle=':', alpha=0.7, label='Trained')
+
+# axs[1].grid()
+# axs[1].set_xlabel('Displacement [mm]')
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# # Figure 전체에 대한 legend 추가
+# fig.legend([line1, line2, line3, line6], ['Reference', 'BW', 'Pretrained', 'Trained'], 
+#            loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.565, 1.0))
+
+# fig.savefig(os.path.join(save_dir, 'LICYC.svg'), bbox_inches='tight')
+
+# MSE_BW = np.sum((force - BW_force) ** 2) / len(force)
+# MSE_trained = np.sum((force - trained_force) ** 2) / len(force)
+# print('MSE_BW: {:.4e}'.format(MSE_BW))
+# print('MSE_trained: {:.4e}'.format(MSE_trained))
+# print('Ratio: {:.4f}'.format(MSE_trained / MSE_BW))
 
 
 
@@ -122,33 +173,57 @@ y_test = Data['y_val']
 y_test_pred = Data['y_val_pred']
 mask_test = Data['mask_val']
 idc = [4, 6, 9]
-fig, axs = plt.subplots(1, 3, figsize=(6, 1.8))
-plt.subplots_adjust(wspace=0.32)
-for i in range(len(idc)):
-    axs[i].plot(X_test[idc[i], :, 0], y_test[idc[i], :], 'k', linewidth=0.7)
-    axs[i].plot(X_test[idc[i], :, 0], y_test_pred[idc[i], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-    axs[i].grid()
-axs[1].legend(['Reference', 'Predicted'], loc='lower right', fontsize=5.5)
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_xlabel('Normalized displacement')
-axs[0].set_ylabel('Normalized force')
-fig.savefig(os.path.join(save_dir, 'OPFD.svg'), bbox_inches='tight')
-# X_train, y_train = Data['X_train'], Data['y_train']
-# X_valid, y_valid = Data['X_valid'], Data['y_valid']
-# X_test, y_test = Data['X_test'], Data['y_test']
-# i = 8
-# fig, axs = plt.subplots(2, 2, figsize=(6, 4))
-# plt.subplots_adjust(wspace=0.5, hspace=0.5)
-# axs[0, 0].plot(X_train[4*i, :, 0], y_train[4*i, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-# axs[0, 0].set_title('{}'.format(4*i))
-# axs[0, 1].plot(X_train[4*i+1, :, 0], y_train[4*i+1, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-# axs[0, 1].set_title('{}'.format(4*i+1))
-# axs[1, 0].plot(X_train[4*i+2, :, 0], y_train[4*i+2, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-# axs[1, 0].set_title('{}'.format(4*i+2))
-# axs[1, 1].plot(X_train[4*i+3, :, 0], y_train[4*i+3, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
-# axs[1, 1].set_title('{}'.format(4*i+3))
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_test[idc[0], :, 0], y_test[idc[0], :], 'k', linewidth=0.7)
+axs.plot(X_test[idc[0], :, 0], y_test_pred[idc[0], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_ylabel('Normalized $f$')
+axs.set_xlabel('Normalized $u$')
+axs.legend(['Reference', 'Predicted'], loc='lower right', fontsize=5.5)
+
+fig.savefig(os.path.join(save_dir, 'OPFD_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_test[idc[1], :, 0], y_test[idc[1], :], 'k', linewidth=0.7)
+axs.plot(X_test[idc[1], :, 0], y_test_pred[idc[1], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'OPFD_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(X_test[idc[2], :, 0], y_test[idc[2], :], 'k', linewidth=0.7)
+axs.plot(X_test[idc[2], :, 0], y_test_pred[idc[2], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Normalized $u$')
+axs.set_ylabel('Normalized $f$')
+fig.savefig(os.path.join(save_dir, 'OPFD_c.svg'), bbox_inches='tight')
+
+# for i in range(len(idc)):
+#     axs[i].plot(X_test[idc[i], :, 0], y_test[idc[i], :], 'k', linewidth=0.7)
+#     axs[i].plot(X_test[idc[i], :, 0], y_test_pred[idc[i], :], 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+#     axs[i].grid()
+# axs[1].legend(['Reference', 'Predicted'], loc='lower right', fontsize=5.5)
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].set_xlabel('Normalized displacement')
+# axs[0].set_ylabel('Normalized force')
+# fig.savefig(os.path.join(save_dir, 'OPFD.svg'), bbox_inches='tight')
+# # X_train, y_train = Data['X_train'], Data['y_train']
+# # X_valid, y_valid = Data['X_valid'], Data['y_valid']
+# # X_test, y_test = Data['X_test'], Data['y_test']
+# # i = 8
+# # fig, axs = plt.subplots(2, 2, figsize=(6, 4))
+# # plt.subplots_adjust(wspace=0.5, hspace=0.5)
+# # axs[0, 0].plot(X_train[4*i, :, 0], y_train[4*i, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# # axs[0, 0].set_title('{}'.format(4*i))
+# # axs[0, 1].plot(X_train[4*i+1, :, 0], y_train[4*i+1, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# # axs[0, 1].set_title('{}'.format(4*i+1))
+# # axs[1, 0].plot(X_train[4*i+2, :, 0], y_train[4*i+2, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# # axs[1, 0].set_title('{}'.format(4*i+2))
+# # axs[1, 1].plot(X_train[4*i+3, :, 0], y_train[4*i+3, :, 0], 'k', linewidth=0.7, marker='o', markersize=2)
+# # axs[1, 1].set_title('{}'.format(4*i+3))
 
 
 
@@ -190,6 +265,115 @@ axs.set_yticks([])
 # axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
 fig.savefig(os.path.join(save_dir, 'BW_b.svg'), bbox_inches='tight')
 
+# %% NUMCONFIG
+if generate_data:
+    Title = 'BoucWen_PE_PI_DA_VelNorm'
+    ids = [2, 10, 15]
+    Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    mask_test = y_test[:, :, 1:2]
+    y_test = y_test[:, :, 0:1]
+    Xs = [X_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    ys = [y_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    np.savez(os.path.join(save_data_dir, 'BWConfig.npz'), X1 = Xs[0], y1 = ys[0], X2 = Xs[1], y2 = ys[1], X3 = Xs[2], y3 = ys[2])
+
+    Title = 'BWBN_PE_PI_DA_VelNorm'
+    ids = [2, 10, 15]
+    Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    mask_test = y_test[:, :, 1:2]
+    y_test = y_test[:, :, 0:1]
+    Xs = [X_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    ys = [y_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    np.savez(os.path.join(save_data_dir, 'BWBNConfig.npz'), X1 = Xs[0], y1 = ys[0], X2 = Xs[1], y2 = ys[1], X3 = Xs[2], y3 = ys[2])
+
+    Title = 'Bilinear_PE_PI_DA_VelNorm' 
+    ids = [2, 10, 15]
+    Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    mask_test = y_test[:, :, 1:2]
+    y_test = y_test[:, :, 0:1]
+    Xs = [X_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    ys = [y_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    np.savez(os.path.join(save_data_dir, 'BilinearConfig.npz'), X1 = Xs[0], y1 = ys[0], X2 = Xs[1], y2 = ys[1], X3 = Xs[2], y3 = ys[2])
+
+    Title = 'RO_PE_PI_DA_VelNorm'
+    ids = [2, 10, 15]
+    Data = np.load(os.path.normpath(os.path.join(processed_data_dir, './' + Title + '_Processed_data.npz')))
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    mask_test = y_test[:, :, 1:2]
+    y_test = y_test[:, :, 0:1]
+    Xs = [X_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    ys = [y_test[id, mask_test[id, :, 0].astype(int).astype(bool), 0] for id in ids]
+    np.savez(os.path.join(save_data_dir, 'ROConfig.npz'), X1 = Xs[0], y1 = ys[0], X2 = Xs[1], y2 = ys[1], X3 = Xs[2], y3 = ys[2])
+
+    Title = 'OP_4_PE_PI_DA_VelNorm'
+    ids = [4, 14, -5]
+    hysteresis_path = os.path.normpath(os.path.join('Xu_hysteresis', './' + 'data_OP_4_final.mat'))
+    Data = scipy.io.loadmat(hysteresis_path)
+    X_test = Data['X_test']
+    y_test = Data['y_test']
+    Xs = [X_test[id] for id in ids]
+    ys = [y_test[id] for id in ids]
+    np.savez(os.path.join(save_data_dir, 'OPConfig.npz'), X1 = Xs[0], y1 = ys[0], X2 = Xs[1], y2 = ys[1], X3 = Xs[2], y3 = ys[2])
+
+Titles = ['BWConfig', 'BWBNConfig', 'BilinearConfig', 'ROConfig', 'OPConfig']
+
+for Title in Titles:
+    Data = np.load(os.path.join(save_data_dir, Title + '.npz'))
+    X1, y1, X2, y2, X3, y3 = Data['X1'], Data['y1'], Data['X2'], Data['y2'], Data['X3'], Data['y3']
+    fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+    axs.plot(X1, y1, 'k', linewidth=0.7)
+    axs.set_xlabel('$u$')
+    axs.set_ylabel('$f$')
+    axs.set_xticks([])
+    axs.set_yticks([])
+
+    fig.savefig(os.path.join(save_dir, Title + '_a.svg'), bbox_inches='tight')
+
+    fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+    axs.plot(X2, y2, 'k', linewidth=0.7)
+    axs.set_xlabel('$u$')
+    axs.set_ylabel('$f$')
+    axs.set_xticks([])
+    axs.set_yticks([])
+
+    fig.savefig(os.path.join(save_dir, Title + '_b.svg'), bbox_inches='tight')
+
+    fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+    axs.plot(X3, y3, 'k', linewidth=0.7)
+    axs.set_xlabel('$u$')
+    axs.set_ylabel('$f$')
+    axs.set_xticks([])
+    axs.set_yticks([])
+
+    fig.savefig(os.path.join(save_dir, Title + '_c.svg'), bbox_inches='tight')
+# Data = np.load(os.path.join(save_data_dir, 'NUMSamples.npz'))
+# BW_X, BW_y, BWBN_X, BWBN_y = Data['BW_X'], Data['BW_y'], Data['BWBN_X'], Data['BWBN_y']
+# BW_X, BW_y = BW_X[:20000], BW_y[:20000]
+# fig, axs = plt.subplots(1, 1, figsize=(2.5, 2.2))
+# axs.plot(BW_X, BW_y, 'k', linewidth=0.4)
+# axs.set_xlabel('Displacement')
+# axs.set_ylabel('Force')
+# axs.set_xticks([])
+# axs.set_yticks([])
+# # axs[0].grid()
+# fig.savefig(os.path.join(save_dir, 'BW_a.svg'), bbox_inches='tight')
+
+# fig, axs = plt.subplots(1, 1, figsize=(2.5, 2.2))
+# axs.plot(BWBN_X, BWBN_y, 'k', linewidth=0.4)
+# axs.set_xlabel('Displacement')
+# axs.set_ylabel('Force')
+# axs.set_xticks([])
+# axs.set_yticks([])
+# # axs[1].grid()
+# # axs[0].text(0.5, -0.2, '(a)', transform=axs[0].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
+# # axs[1].text(0.5, -0.2, '(b)', transform=axs[1].transAxes, fontsize=8, fontweight='bold', va='top', ha='center')
+# fig.savefig(os.path.join(save_dir, 'BW_b.svg'), bbox_inches='tight')
 
 
 
@@ -1103,25 +1287,116 @@ test_paths = ['ResultAnalysis_for_paper/WCEE2024/Data/RO_PE_PI_DA2_{}.npz'.forma
 test_datas = [np.load(test_path) for test_path in test_paths]
 
 
-fig, axs = plt.subplots(3, 1, figsize=(6, 4))
-plt.subplots_adjust(hspace=0.5)
-for i, test_data in enumerate(test_datas):
-    ref_disp = test_data['ref_disp']
-    pred_disp = test_data['pred_disp']
-    dt = test_data['dt']
-    t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
-    t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
-    axs[i].plot(t_ref, ref_disp, 'k', linewidth=0.7)
-    axs[i].plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
-    axs[i].set_xlim([0, t_ref[-1]])
-    axs[i].grid()
-axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].legend(['Reference', 'Predicted'], loc='upper left', fontsize=6.5, ncol=2)
-axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-axs[1].set_ylabel('Displacement [m]')
-axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
-fig.text(0.5, -0.01, 'Time [s]', ha='center', fontsize=8)
-fig.savefig(os.path.join(save_dir, 'RODY.svg'), bbox_inches='tight')
+fig1, axs1 = plt.subplots(1, 1, figsize=(4.5, 1.4))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.4, 1.4))
+
+test_data = test_datas[0]
+ref_disp = test_data['ref_disp']
+pred_disp = test_data['pred_disp']
+ref_force = test_data['ref_force']
+pred_force = test_data['pred_force']
+dt = test_data['dt']
+t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
+t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
+
+axs1.plot(t_ref, ref_disp, 'k', linewidth=0.7)
+axs1.plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs1.set_xlim([0, t_ref[-1]])
+axs1.grid()
+axs1.set_xlabel('Time [s]')
+axs1.set_ylabel('Displacement [m]')
+
+fig1.savefig(os.path.join(save_dir, 'RODY_a.svg'), bbox_inches='tight')
+
+axs2.plot(ref_disp, ref_force, 'k', linewidth=0.7)
+axs2.plot(pred_disp, pred_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs2.grid()
+axs2.set_xlabel('Displacement [m]')
+axs2.set_ylabel('Force [N]')
+
+fig2.savefig(os.path.join(save_dir, 'RODY_b.svg'), bbox_inches='tight')
+
+
+fig1, axs1 = plt.subplots(1, 1, figsize=(4.5, 1.4))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.4, 1.4))
+
+test_data = test_datas[1]
+ref_disp = test_data['ref_disp']
+pred_disp = test_data['pred_disp']
+ref_force = test_data['ref_force']
+pred_force = test_data['pred_force']
+dt = test_data['dt']
+t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
+t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
+
+axs1.plot(t_ref, ref_disp, 'k', linewidth=0.7)
+axs1.plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs1.set_xlim([0, t_ref[-1]])
+axs1.grid()
+axs1.set_xlabel('Time [s]')
+axs1.set_ylabel('Displacement [m]')
+
+fig1.savefig(os.path.join(save_dir, 'RODY_c.svg'), bbox_inches='tight')
+
+axs2.plot(ref_disp, ref_force, 'k', linewidth=0.7)
+axs2.plot(pred_disp, pred_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs2.grid()
+axs2.set_xlabel('Displacement [m]')
+axs2.set_ylabel('Force [N]')
+
+fig2.savefig(os.path.join(save_dir, 'RODY_d.svg'), bbox_inches='tight')
+
+
+fig1, axs1 = plt.subplots(1, 1, figsize=(4.5, 1.4))
+fig2, axs2 = plt.subplots(1, 1, figsize=(1.4, 1.4))
+
+test_data = test_datas[2]
+ref_disp = test_data['ref_disp']
+pred_disp = test_data['pred_disp']
+ref_force = test_data['ref_force']
+pred_force = test_data['pred_force']
+dt = test_data['dt']
+t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
+t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
+
+axs1.plot(t_ref, ref_disp, 'k', linewidth=0.7)
+axs1.plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs1.set_xlim([0, t_ref[-1]])
+axs1.grid()
+axs1.set_xlabel('Time [s]')
+axs1.set_ylabel('Displacement [m]')
+
+fig1.savefig(os.path.join(save_dir, 'RODY_e.svg'), bbox_inches='tight')
+
+axs2.plot(ref_disp, ref_force, 'k', linewidth=0.7)
+axs2.plot(pred_disp, pred_force, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs2.grid()
+axs2.set_xlabel('Displacement [m]')
+axs2.set_ylabel('Force [N]')
+
+fig2.savefig(os.path.join(save_dir, 'RODY_f.svg'), bbox_inches='tight')
+
+
+# # plt.subplots_adjust(hspace=0.5)
+# for i, test_data in enumerate(test_datas):
+#     ref_disp = test_data['ref_disp']
+#     pred_disp = test_data['pred_disp']
+#     ref_force = test_data['ref_force']
+#     pred_force = test_data['pred_force']
+#     dt = test_data['dt']
+#     t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
+#     t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
+#     axs[i].plot(t_ref, ref_disp, 'k', linewidth=0.7)
+#     axs[i].plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+#     axs[i].set_xlim([0, t_ref[-1]])
+#     axs[i].grid()
+# axs[0].text(0.5, -0.25, '(a)', transform=axs[0].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].legend(['Reference', 'Predicted'], loc='upper left', fontsize=6.5, ncol=2)
+# axs[1].text(0.5, -0.25, '(b)', transform=axs[1].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# axs[1].set_ylabel('Displacement [m]')
+# axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
+# fig.text(0.5, -0.01, 'Time [s]', ha='center', fontsize=8)
+# fig.savefig(os.path.join(save_dir, 'RODY.svg'), bbox_inches='tight')
 
 
 
