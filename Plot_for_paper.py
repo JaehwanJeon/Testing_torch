@@ -45,11 +45,15 @@ loss_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
 disps = []
 forces = []
 BW_forces = []
+pretrain_forces = []
+trained_forces = []
 for i in range(3):
     Data = np.load(os.path.join(save_data_dir, 'Link_{}.npz'.format(i)))
     disps.append(Data['train_disps'])
     forces.append(Data['train_forces'])
     BW_forces.append(Data['BW_force'])
+    pretrain_forces.append(Data['pretrained_force'])
+    trained_forces.append(Data['trained_force'])
 
 fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
 # plt.subplots_adjust(wspace=0.32)
@@ -96,6 +100,68 @@ fig.savefig(os.path.join(save_dir, 'LIRAND_c.svg'), bbox_inches='tight')
 # axs[2].text(0.5, -0.25, '(c)', transform=axs[2].transAxes, fontsize=8.5, fontweight='bold', va='top', ha='center')
 # fig.savefig(os.path.join(save_dir, 'LIRAND.svg'), bbox_inches='tight')
 
+# %%
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+# plt.subplots_adjust(wspace=0.32)
+axs.plot(disps[0]*711.2, forces[0], 'k', linewidth=0.7, label='Reference')
+axs.plot(disps[0]*711.2, pretrain_forces[0], 'orange', linewidth=0.7, linestyle='--', alpha=0.8, label='BW')
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+axs.set_ylim([-750, 982])
+axs.legend(loc='upper left', fontsize=5.5, ncol=2)
+
+fig.savefig(os.path.join(save_dir, 'LIRPRE_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[1]*711.2, forces[1], 'k', linewidth=0.7)
+axs.plot(disps[1]*711.2, pretrain_forces[1], 'orange', linewidth=0.7, linestyle='--', alpha=0.8)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRPRE_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[2]*711.2, forces[2], 'k', linewidth=0.7)
+axs.plot(disps[2]*711.2, pretrain_forces[2], 'orange', linewidth=0.7, linestyle='--', alpha=0.8)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRPRE_c.svg'), bbox_inches='tight')
+
+# %%
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+# plt.subplots_adjust(wspace=0.32)
+axs.plot(disps[0]*711.2, forces[0], 'k', linewidth=0.7, label='Reference')
+axs.plot(disps[0]*711.2, trained_forces[0], 'r', linewidth=0.7, linestyle=':', alpha=0.7, label='Proposed')
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+axs.set_ylim([-750, 982])
+axs.legend(loc='upper left', fontsize=5.2, ncol=2)
+
+fig.savefig(os.path.join(save_dir, 'LIRTR_a.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[1]*711.2, forces[1], 'k', linewidth=0.7)
+axs.plot(disps[1]*711.2, trained_forces[1], 'r', linewidth=0.7, linestyle=':', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRTR_b.svg'), bbox_inches='tight')
+
+fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
+axs.plot(disps[2]*711.2, forces[2], 'k', linewidth=0.7)
+axs.plot(disps[2]*711.2, trained_forces[2], 'r', linewidth=0.7, linestyle=':', alpha=0.7)
+axs.grid()
+axs.set_xlabel('Displacement [mm]')
+axs.set_ylabel('Force [kN]')
+
+fig.savefig(os.path.join(save_dir, 'LIRTR_c.svg'), bbox_inches='tight')
+
 
 
 # %% LICYC
@@ -110,7 +176,7 @@ trained_force = Data['trained_force']
 fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
 # plt.subplots_adjust(wspace=0.32)
 line1, = axs.plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
-line2, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
+# line2, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7, label='BW')
 line3, = axs.plot(disp*711.2, pretrained_force, 'blue', linewidth=0.7, linestyle=':', alpha=0.7, label='Pretrained')
 axs.grid()
 axs.set_xlabel('Displacement [mm]')
@@ -118,11 +184,13 @@ axs.set_ylabel('Force [kN]')
 
 fig.savefig(os.path.join(save_dir, 'LICYC_a.svg'), bbox_inches='tight')
 
-fig, axs = plt.subplots(1, 1, figsize=(1.8, 1.8))
-line4, = axs.plot(disp*711.2, force, 'k', linewidth=0.7)
-line5, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
-line6, = axs.plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle=':', alpha=0.7, label='Trained')
+fig, axs = plt.subplots(1, 1, figsize=(2.5, 2.5))
+line4, = axs.plot(disp*711.2, force, 'k', linewidth=0.7, label='Reference')
+# line5, = axs.plot(disp*711.2, BW_force, 'orange', linewidth=0.7, linestyle='--', alpha=0.7)
+line6, = axs.plot(disp*711.2, trained_force, 'r', linewidth=0.7, linestyle=':', alpha=0.7, label='Proposed')
 axs.grid()
+axs.legend(loc='upper left', fontsize=5.5, ncol=2, bbox_to_anchor=(0.25, 1.10))
+# axs.set_ylim([-750, 982])
 axs.set_xlabel('Displacement [mm]')
 axs.set_ylabel('Force [kN]')
 
@@ -130,7 +198,7 @@ fig.savefig(os.path.join(save_dir, 'LICYC_b.svg'), bbox_inches='tight')
 
 
 fig, axs = plt.subplots(1, 1, figsize=(4, 1.8))
-fig.legend([line1, line2, line3, line6], ['Reference', 'BW', 'Pretrained', 'Trained'], 
+fig.legend([line1, line3, line6], ['Reference', 'Pretrained', 'Trained'], 
            loc='upper center', ncol=4, fontsize=5.5, bbox_to_anchor=(0.5, 1.0))
 fig.savefig(os.path.join(save_dir, 'LICYC_legend.svg'), bbox_inches='tight')
 
@@ -1570,3 +1638,46 @@ def count_trainable_parameters(model):
 model = CustomLSTM(2, 64, 1)
 for name, param in model.named_parameters():
     print(f"Name: {name}, Shape: {param.shape}")
+
+
+
+# %%
+Titles = ['BoucWen_PE_PI_DA', 'BWBN_PE_PI_DA', 'Bilinear_PE_PI_DA', 'RO_PE_PI_DA']
+
+if generate_data:
+    for Title in Titles:
+        Data = np.load(os.path.join(save_data_dir, Title + '_Test.npz'))
+        X_tests, y_tests, mask_tests, y_test_preds, energies_test = Data['X_test'], Data['y_test'], Data['mask_test'], Data['y_test_pred'][:, :, 0], Data['energies_test'][:, :, 0]
+        mse_loss = np.sum((y_tests - y_test_preds) ** 2 * mask_tests) / np.sum(mask_tests)
+        phys_loss = drucker_loss_numpy(y_test_preds, energies_test, mask_tests)
+        np.savez(os.path.join(save_data_dir, Title + '_Loss.npz'), mse_loss=mse_loss, phys_loss=phys_loss)
+
+for Title in Titles:
+    Data = np.load(os.path.join(save_data_dir, Title + '_Loss.npz'))
+    print(Title)
+    print('MSE loss: {:.4e}'.format(Data['mse_loss']))
+    print('Physics loss: {:.4e}'.format(Data['phys_loss']))
+
+# %%
+Data = np.load('Result Plots/OP_4_PE_VelNorm_data.npz')
+Data.keys()
+X_tests, y_tests, y_test_preds, mask_tests  = Data['X_val'], Data['y_val'], Data['y_val_pred'][:, :, 0], Data['mask_val']
+ds = np.diff(X_tests[:, :, 0], prepend=0)
+force_ = (1 / 2 * (np.concatenate((np.zeros((1000, 1)), y_test_preds), axis=-1) + np.concatenate((y_test_preds, np.zeros((1000, 1))), axis=-1)))[:, :-1]
+energies_test = np.cumsum(force_ * ds, axis=-1)
+mse_loss = np.sum((y_tests - y_test_preds) ** 2 * mask_tests) / np.sum(mask_tests)
+phys_loss = drucker_loss_numpy(y_test_preds, energies_test, mask_tests)
+
+print('MSE loss: {:.4e}'.format(mse_loss))
+print('Physics loss: {:.4e}'.format(phys_loss))
+# %%
+Titles = ['BoucWen_PE_PI_DA', 'BWBN_PE_PI_DA', 'Bilinear_PE_PI_DA', 'RO_PE_PI_DA', 'OP_4_PE_VelNorm']
+
+for Title in Titles:
+    loss_data = pd.read_csv(os.path.normpath(os.path.join(loss_dir, Title + '_loss.csv')))
+    losses = loss_data['Loss'].values
+
+    best_model_idx = np.argmin(losses)
+    best_model_epoch = loss_data['Epoch'].values[best_model_idx]
+    print(Title)
+    print('Best model epoch: {}'.format(best_model_epoch))
