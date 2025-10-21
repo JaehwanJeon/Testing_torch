@@ -1,26 +1,24 @@
-# Hysteresis 예측을 위한 딥러닝 모델
-## 파일 구조
-```
+Deep Learning Model for Hysteresis Prediction
+File Structure
 .
 ├── BilinearTesting_main.py, BoucWenTesting_main.py, BWBNTesting_main.py, IMKTesting_main.py, ROTesting_main.py
-│   ├── 각 모델 테스트를 위한 메인 파일
-│   ├── 각 파일마다 EQ_generation.py, Preprocessing.py, Training.py, ResultAnalysis.py를 import하여 돌림
-│   ├── 각각 generate_EQ, preprocess, train, analyze_result를 True로 설정하여 실행
-│   └── 딥러닝 모델의 parameter 또한 이 파일에서 변경 가능
+│   ├── Main files for testing each model
+│   ├── Each file imports and runs EQ_generation.py, Preprocessing.py, Training.py, and ResultAnalysis.py
+│   ├── Run each by setting generate_EQ, preprocess, train, and analyze_result to True
+│   └── Deep learning model parameters can also be changed in these files
 │
 ├── EQ_generation.py
-│   └── EQ 생성 함수
+│   └── Function for Earthquake (EQ) generation
 ├── Preprocessing.py
-│   └── 데이터 전처리 함수
+│   └── Function for data preprocessing
 ├── Training.py
-│   └── 모델 학습 함수
+│   └── Function for model training
 ├── ResultAnalysis.py
-│   └── 결과 분석 함수
+│   └── Function for result analysis
 │
 └── backend.py
-    └── 각종 백엔드 함수 존재 (ex: 손실함수, 제안한 LSTM 모델 등)
-```
+    └── Contains various backend functions (e.g., loss function, proposed LSTM model, etc.)
 
-## 사용 방법
-1. generate_EQ, preprocess, train, analyze_result를 True 또는 False로 설정하여 실행
-2. preprocess 함수와 train 함수 사이에서 딥러닝 모델의 parameter를 변경 가능 (ex. nn_size = 64, alpha = 0.2, window_size = 1000 등)
+How to Use
+ * Run by setting generate_EQ, preprocess, train, and analyze_result to True or False.
+ * Deep learning model parameters can be modified between the preprocess and train functions (e.g., nn_size = 64, alpha = 0.2, window_size = 1000, etc.).
