@@ -57,3 +57,5 @@ The main execution and workflow control is managed by modifying settings within 
      * alpha = 0.2 (A model-specific parameter, e.g., for regularization or a non-linear activation)
 
      * window_size = 1000 (The size of the input sequence/window for the time-series prediction)
+
+ * Example model parameters are provided in ExampleModels directory for reference.
