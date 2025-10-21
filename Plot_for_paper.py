@@ -23,7 +23,7 @@ plt.rcParams['ytick.labelsize'] = 7 # y축 눈금 라벨의 기본 글씨 크기
 plt.rcParams['legend.fontsize'] = 7 # 범례의 기본 글씨 크기 설정
 
 
-device = torch.device('cuda:1')
+device = torch.device('cuda:0')
 save_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/ResultAnalysis_for_paper/Paper'
 os.makedirs(save_dir, exist_ok=True)
 generate_data = False
@@ -753,7 +753,7 @@ fig.savefig(os.path.join(save_dir, 'BWFD_c.svg'), bbox_inches='tight')
 # fig.savefig(os.path.join(save_dir, 'BWFD.svg'), bbox_inches='tight')
 
 
-# %% BW Loss
+# %% BW Loss & @BWLO
 Title = 'BoucWen_PE_PI_DA'
 if generate_data:
     Data = np.load(os.path.join(save_data_dir, Title + '_Test.npz'))
@@ -765,6 +765,9 @@ if generate_data:
 Data = np.load(os.path.join(save_data_dir, Title + '_Loss.npz'))
 print('MSE loss: {:.4e}'.format(Data['mse_loss']))
 print('Physics loss: {:.4e}'.format(Data['phys_loss']))
+
+Title = 'BoucWen_PE_PI_DA2_alpha0.2'
+
 # %% BWCY
 # Response to Cyclic - Bouc-Wen
 Title = 'BoucWen_PE_PI_DA'
@@ -1367,12 +1370,13 @@ dt = test_data['dt']
 t_ref = np.linspace(0, len(ref_disp) * dt, len(ref_disp))
 t_pred = np.linspace(0, len(pred_disp) * dt, len(pred_disp))
 
-axs1.plot(t_ref, ref_disp, 'k', linewidth=0.7)
-axs1.plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7)
+axs1.plot(t_ref, ref_disp, 'k', linewidth=0.7, label='Reference')
+axs1.plot(t_pred, pred_disp, 'r', linewidth=0.7, linestyle='--', alpha=0.7, label='Predicted')
 axs1.set_xlim([0, t_ref[-1]])
 axs1.grid()
 axs1.set_xlabel('Time [s]')
 axs1.set_ylabel('Displacement [m]')
+axs1.legend(loc='upper left', fontsize=6.5)
 
 fig1.savefig(os.path.join(save_dir, 'RODY_a.svg'), bbox_inches='tight')
 
@@ -1467,6 +1471,7 @@ fig2.savefig(os.path.join(save_dir, 'RODY_f.svg'), bbox_inches='tight')
 # fig.savefig(os.path.join(save_dir, 'RODY.svg'), bbox_inches='tight')
 
 
+# %% BWLO
 
 
 
@@ -1681,3 +1686,24 @@ for Title in Titles:
     best_model_epoch = loss_data['Epoch'].values[best_model_idx]
     print(Title)
     print('Best model epoch: {}'.format(best_model_epoch))
+
+Title = 'BoucWen_PE_PI_DA2_alpha0.2'
+fig, ax = plt.subplots(figsize=(4.5, 1.4))
+loss_data = pd.read_csv(os.path.normpath(os.path.join(loss_dir, Title + '_loss.csv')))
+losses = loss_data['Loss'].values
+train_losses = loss_data['TrainLoss'].values
+best_model_idx = np.argmin(losses)
+best_model_epoch = loss_data['Epoch'].values[best_model_idx]
+ax.plot(loss_data['Epoch'], train_losses, 'k', linewidth=0.7, linestyle='--', alpha=0.7, label='Train loss')
+ax.plot(loss_data['Epoch'], losses, 'darkorange', linewidth=0.7, label='Validation loss')
+
+ax.axvline(best_model_epoch, color='r', linestyle='--', linewidth=0.7, label='Best model epoch: {}'.format(int(best_model_epoch)))
+ax.set_xlabel('Epoch')
+ax.set_ylabel('Loss')
+# ax.set_yscale('log')
+ax.legend(loc='upper right', fontsize=6.5)
+ax.grid()
+ax.set_xlim([0, 1000])
+ax.set_ylim([0, 0.015])
+
+fig.savefig(os.path.join(save_dir, 'BWLO.svg'), bbox_inches='tight')

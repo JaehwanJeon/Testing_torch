@@ -55,6 +55,7 @@ def generate_hysteresis(EQ_data_dir,
         gm = np.array(gm)*9.8
         scale_factor = max_value/abs(gm).max()
         gm = gm*scale_factor
+        # gm = gm*scale_factor * np.random.uniform(0.9, 1.1)
         if change_at2_to_numpy:
             np.save(file_name+'.npy', gm)
             print('ground motions converted to numpy data')

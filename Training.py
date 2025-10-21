@@ -134,7 +134,7 @@ def train(X_train,
             if (epoch + 1) % checkpoint_epoch == 0:
                 outputs, energies,  _ = model(X_val)
                 loss = criterion(outputs[:, :, 0], y_val, energies[:, :, 0], mask_val, alpha=alpha)
-                new_row = {'Epoch': epoch+1, 'Loss': loss.item(), 'MSE': LossClass.mse_loss.item(), 'PhysLoss': LossClass.phys_loss.item()}
+                new_row = {'Epoch': epoch+1, 'Loss': loss.item(), 'MSE': LossClass.mse_loss.item(), 'PhysLoss': LossClass.phys_loss.item(), 'TrainLoss': avg_loss}
                 validation_df = validation_df.append(new_row, ignore_index=True)
                 validation_df.to_csv(os.path.normpath(os.path.join(result_plot_dir, title + '_loss.csv')), index=False)
                 val_loss.append(loss.item())
