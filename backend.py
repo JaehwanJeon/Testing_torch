@@ -21,27 +21,6 @@ def add_diff(X):
     return X
 
 
-def augmentation(sample, rate):
-    raise NotImplementedError
-    # sample: [batch, time, features]
-
-    shifted_right = torch.roll(sample, shifts=1, dims=1)
-    shifted_left = torch.roll(sample, shifts=-1, dims=1)
-    local_max_mask = (sample > shifted_right) & (sample > shifted_left)
-
-    local_min_mask = (sample < shifted_right) & (sample < shifted_left)
-
-    extrema_mask = local_max_mask | local_min_mask
-
-    non_extrema_mask = ~extrema_mask
-
-    indices = torch.randperm(sample.size(1))
-
-    num_augmented = int(sample.size(1) * rate)
-
-    non_extrema_mask = non_extrema_mask[:, indices[:num_augmented], :]
-
-
 class Loss:
     def __init__(self, y_pred, y, energies, mask, device):
         self.mse_loss_init = (torch.mean((y_pred - y)**2 * mask)).to(device).detach()

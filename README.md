@@ -4,7 +4,7 @@ This document outlines the file structure and usage instructions for the deep le
 
 
 📁 File Structure
-The project is organized into modular Python scripts to manage earthquake generation, data preprocessing, model training, and results analysis for various hysteretic models.
+The project is organized into modular Python scripts to manage earthquake generation, data preprocessing, model training, and results analysis for various hysteretic models. The datasets used will be made available upon request. Please contact the authors for access.
 
 .
 

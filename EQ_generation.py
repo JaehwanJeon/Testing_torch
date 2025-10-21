@@ -92,59 +92,6 @@ def generate_hysteresis(EQ_data_dir,
     print('Hysteresis data saved to {}'.format(hysteresis_data_dir))
 
 
-def generate_impact_response(impact_length_list,
-                             impact_magnitude_list,
-                             hysteresis_data_dir,
-                             draw_hysteresis,
-                             mat_type,
-                             mat_props,
-                             title):
-    raise NotImplementedError('This function is not implemented yet. Please use the following code snippet to generate impact response data')
-    hysteresis_data_dir_impact = os.path.normpath(os.path.join(hysteresis_data_dir, './Impact'))
-    os.makedirs(hysteresis_data_dir_impact, exist_ok=True)
-
-    for impact_length in impact_length_list:
-        for impact_magnitude in impact_magnitude_list:
-
-            t = np.arange(0, impact_length)
-            # impact_loading for sine impact
-            # impact_loading = impact_magnitude * np.sin(np.pi * t / impact_duration)
-
-            # impact_loading for sharp impact
-            # impact_loading = np.concatenate((np.linspace(0, impact_magnitude, num=len(t)//2),
-            #       np.linspace(impact_magnitude, 0, num=len(t)//2)))
-
-            # impact_loading for smooth impact
-            disp = impact_magnitude * np.exp(-((t-max(t)/2)**2) / (2 * (impact_length / 10)**2)) - impact_magnitude * np.exp(-((0-max(t)/2)**2) / (2 * (impact_length / 10)**2))
-            
-            # Add pre-impact loading (zero - process)
-            t = np.concatenate((np.arange(0, 1), t + 1))
-            disp = np.concatenate((np.zeros((len(np.arange(0, 1)))), disp))
-
-            outputs = Experiment.static_1DOF(mat_type, mat_props, disp)
-
-            #### Calculate energy ####
-            disp = outputs['disp']
-            force = outputs['force']
-            ds = np.diff(disp, prepend=0)
-            force_ = 1 / 2 * (np.concatenate(([0], force)) + np.concatenate((force, [0])))[:-1]
-            energy = np.cumsum(force_ * ds)
-
-            np.savez(os.path.normpath(os.path.join(hysteresis_data_dir_impact, title + '_{}_{}.npz'.format(impact_length, impact_magnitude))), disp=outputs['disp'],
-                        force=outputs['force'], energy=energy)
-            if draw_hysteresis:
-                fig, ax = plt.subplots(figsize=(8,8))
-                ax.plot(outputs['disp'], outputs['force'])
-                ax.set_xlabel('Displacement (m)')
-                ax.tick_params(axis='both', which='major', labelsize=15)
-                ax.grid()
-                ax.set_title('{}_{}'.format(impact_length, impact_magnitude))
-                fig.savefig(os.path.normpath(os.path.join(hysteresis_data_dir_impact, './' + title + '_{}_{}.png'.format(impact_length, impact_magnitude))))
-                plt.close(fig)
-
-
-    print('Hysteresis data saved to {}'.format(hysteresis_data_dir_impact))
-
 
 def generate_linear_protocol(hysteresis_data_dir_linear_protocol,
                                 draw_hysteresis,
