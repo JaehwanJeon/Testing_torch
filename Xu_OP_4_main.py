@@ -35,7 +35,7 @@ print(EQ_list_[:3])
 EQ_list = []
 for i, EQ in enumerate(EQ_list_):
     EQ_name = './'+EQ
-    EQ_list.append(os.path.normpath(os.path.join('/home/jaehwan/Python Project/DLCM/Data', EQ_name)).replace("\\", "/"))
+    EQ_list.append(os.path.normpath(os.path.join('Your Data dir', EQ_name)).replace("\\", "/"))
 print(EQ_list[:3])
 
 
@@ -59,7 +59,7 @@ nn_size = 64
 model = CustomLSTM(2, nn_size, 1)
 alpha = 0.0
 num_epochs = 1000
-model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
+model_dir = 'Your Model Directory'
 os.makedirs(model_dir, exist_ok=True) 
 window_size = 1000
 checkpoint_epoch = 5
@@ -70,7 +70,7 @@ if pretrained != False:
     checkpoint = torch.load(pretrained)
 
 
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
+result_plot_dir = 'Your Result Plot Directory'
 os.makedirs(result_plot_dir, exist_ok=True)
 
 if train:

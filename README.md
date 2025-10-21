@@ -8,9 +8,9 @@ The project is organized into modular Python scripts to manage earthquake genera
 
 .
 
-├── BilinearTesting_main.py, BoucWenTesting_main.py, BWBNTesting_main.py, IMKTesting_main.py, ROTesting_main.py
+├── BilinearTesting_main.py, BoucWenTesting_main.py, BWBNTesting_main.py, Xu_OP_4_main.py, ROTesting_main.py, Link_main.py
 
-│   ├── Main files for testing each specific hysteretic model (e.g., Bilinear, Bouc-Wen, Ibarra-Medina-Krawinkler, etc.)
+│   ├── Main files for testing each specific hysteretic model (e.g., Bilinear, Bouc-Wen, Menegotto-Pinto, Ramberg-Osgood, and experimental Link dataset.)
 
 │   ├── These files drive the entire process: they import and execute the functions from EQ_generation.py, Preprocessing.py, Training.py, and ResultAnalysis.py.
 

@@ -22,10 +22,10 @@ preprocess = False
 train = False
 analyze_result = True
 
-Title = 'Link_filtered_no_cyclic' # 실제로 한건 2 layer이다..
+Title = 'Link_filtered_no_cyclic' 
 file_names = ['Link_' + str(i) + '_filtered' for i in range(1, 5)]
 
-hysteresis_data_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Hysteresis/Pedram'
+hysteresis_data_dir = 'Your Hysteresis Data Directory'
 hysteresis_data_paths = [os.path.normpath(os.path.join(hysteresis_data_dir, './' + file_name + '.csv')) for file_name in file_names]
 
 seed = 0
@@ -79,7 +79,7 @@ X_train, mask_train, X_val, mask_val = X_train[:, :, :num_inputs-1], X_train[:, 
 nn_size = 64
 alpha = 0.2
 num_epochs = 3000
-model_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Models'
+model_dir = 'Your Model Directory'
 os.makedirs(model_dir, exist_ok=True) 
 window_size = 512
 checkpoint_epoch = 5
@@ -89,7 +89,7 @@ if pretrained != False:
     checkpoint = torch.load(pretrained)
 
 augmentation_rate = 0.8
-result_plot_dir = '/home/jaehwan/Python Project/DLCM/Testing_torch/Result Plots'
+result_plot_dir = 'Your Result Plot Directory'
 
 if train:
     model = Training.train(X_train,

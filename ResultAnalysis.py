@@ -8,63 +8,6 @@ import re
 import pandas as pd
 from backend import *
 
-def test_impact(X_test,
-                y_test,
-                mask_test,
-                impact_length_list,
-                impact_magnitude_list,
-                model_paths,
-                title,
-                nn_size,
-                result_plot_dir):
-    raise NotImplementedError("This part is not implemented yet.")
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
-
-    loss_data_file = os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv'))
-    losses = pd.read_csv(loss_data_file)['Loss'].values
-
-    best_model_idx = np.argmin(losses)
-    checkpoint = torch.load(model_paths[best_model_idx])
-    model = Training.CustomLSTM(2, nn_size, 1)
-    model.load_state_dict(checkpoint)
-    model = model.to(device)
-    model.eval()
-
-    X_test, y_test, mask_test = torch.from_numpy(X_test).float().to(device), torch.from_numpy(y_test).float().to(device), torch.from_numpy(mask_test).float().to(device)
-
-    y_test_pred, energies_test_pred, _ = model(X_test)
-    
-    mse_list = []
-    drucker_list = []
-    for i in range(len(y_test_pred)):
-        mse_list.append(Training.custom_loss(y_test_pred[i, :, 0], y_test[i, :], mask_test[i, :]).cpu().detach().numpy().item())
-        drucker_list.append(Training.drucker_loss(y_test_pred[i:i+1, :, 0], energies_test_pred[i:i+1, :, 0], mask_test[i:i+1, :]).cpu().detach().numpy().item())
-    y_test_pred = y_test_pred.cpu().detach().numpy()
-    X_test = X_test.cpu().detach().numpy()
-    y_test = y_test.cpu().detach().numpy()
-    mask_test = mask_test.cpu().detach().numpy()
-
-    i = 0
-    for impact_length in impact_length_list:
-        for impact_magnitude in impact_magnitude_list:
-            X_test_i = X_test[i, mask_test[i].astype(int).astype(bool), 0]
-            y_test_pred_i = y_test_pred[i, mask_test[i].astype(int).astype(bool)]
-            y_test_i = y_test[i, mask_test[i].astype(int).astype(bool)]
-            plt.figure(figsize=(8, 8))
-            plt.plot(X_test_i, y_test_i, 'b')
-            plt.plot(X_test_i, y_test_pred_i, 'r')
-            plt.text(0.8, 0.3, 'MSE: {:.4e}\nDrucker: {:.4e}'.format(mse_list[i], drucker_list[i]), horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes, fontsize=12)
-            plt.grid()
-            plt.xlabel('Displacement (m)', fontsize=12)
-            plt.ylabel('Force (N)', fontsize=12)
-            plt.tick_params(axis='both', which='major', labelsize=12)
-            plt.legend(['Reference', 'Predicted'], fontsize=12)
-            plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_{}_{}_test.png'.format(impact_length, impact_magnitude))))
-            plt.close()
-            i += 1
-
-
 import os
 import torch
 import torch.nn as nn
@@ -74,63 +17,6 @@ import Training
 import re
 import pandas as pd
 from backend import *
-
-def test_impact(X_test,
-                y_test,
-                mask_test,
-                impact_length_list,
-                impact_magnitude_list,
-                model_paths,
-                title,
-                nn_size,
-                result_plot_dir):
-    raise NotImplementedError("This part is not implemented yet.")
-    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    device = torch.device('cuda:0')
-
-    loss_data_file = os.path.normpath(os.path.join(result_plot_dir, './' + title + '_loss.csv'))
-    losses = pd.read_csv(loss_data_file)['Loss'].values
-
-    best_model_idx = np.argmin(losses)
-    checkpoint = torch.load(model_paths[best_model_idx])
-    model = Training.CustomLSTM(2, nn_size, 1)
-    model.load_state_dict(checkpoint)
-    model = model.to(device)
-    model.eval()
-
-    X_test, y_test, mask_test = torch.from_numpy(X_test).float().to(device), torch.from_numpy(y_test).float().to(device), torch.from_numpy(mask_test).float().to(device)
-
-    y_test_pred, energies_test_pred, _ = model(X_test)
-    
-    mse_list = []
-    drucker_list = []
-    for i in range(len(y_test_pred)):
-        mse_list.append(Training.custom_loss(y_test_pred[i, :, 0], y_test[i, :], mask_test[i, :]).cpu().detach().numpy().item())
-        drucker_list.append(Training.drucker_loss(y_test_pred[i:i+1, :, 0], energies_test_pred[i:i+1, :, 0], mask_test[i:i+1, :]).cpu().detach().numpy().item())
-    y_test_pred = y_test_pred.cpu().detach().numpy()
-    X_test = X_test.cpu().detach().numpy()
-    y_test = y_test.cpu().detach().numpy()
-    mask_test = mask_test.cpu().detach().numpy()
-
-    i = 0
-    for impact_length in impact_length_list:
-        for impact_magnitude in impact_magnitude_list:
-            X_test_i = X_test[i, mask_test[i].astype(int).astype(bool), 0]
-            y_test_pred_i = y_test_pred[i, mask_test[i].astype(int).astype(bool)]
-            y_test_i = y_test[i, mask_test[i].astype(int).astype(bool)]
-            plt.figure(figsize=(8, 8))
-            plt.plot(X_test_i, y_test_i, 'b')
-            plt.plot(X_test_i, y_test_pred_i, 'r')
-            plt.text(0.8, 0.3, 'MSE: {:.4e}\nDrucker: {:.4e}'.format(mse_list[i], drucker_list[i]), horizontalalignment='center', verticalalignment='center', transform=plt.gca().transAxes, fontsize=12)
-            plt.grid()
-            plt.xlabel('Displacement (m)', fontsize=12)
-            plt.ylabel('Force (N)', fontsize=12)
-            plt.tick_params(axis='both', which='major', labelsize=12)
-            plt.legend(['Reference', 'Predicted'], fontsize=12)
-            plt.savefig(os.path.normpath(os.path.join(result_plot_dir, './' + title + '_{}_{}_test.png'.format(impact_length, impact_magnitude))))
-            plt.close()
-            i += 1
-
 
 def result_plot(X_val,
                 y_val,
